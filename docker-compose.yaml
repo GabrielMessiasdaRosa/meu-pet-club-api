@@ -5,5 +5,5 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
-    environment:
-      file: .env
+    env_file:
+      - .env
