@@ -1,0 +1,71 @@
+# Este workflow é configurado para realizar análise de código e cobertura utilizando o SonarCloud.
+# Ele é acionado automaticamente em eventos de push e pull request em qualquer branch, 
+# além de permitir execução manual via workflow_dispatch.
+
+# Permissões:
+# - Define permissões de leitura para pull requests.
+
+# Jobs:
+# 1. Coverage:
+#    - Executa em um ambiente Ubuntu mais recente.
+#    - Passos:
+#      - Faz o checkout do repositório.
+#      - Configura o Node.js na versão 23.8.0.
+#      - Instala as dependências do projeto.
+#      - Executa os testes e gera o relatório de cobertura.
+#      - Realiza o scan do código com o SonarCloud utilizando o token armazenado em secrets.
+
+# 2. Analysis:
+#    - Executa em um ambiente Ubuntu mais recente.
+#    - Passos:
+#      - Realiza a análise do código com o SonarCloud utilizando o token armazenado em secrets.
+#      - O diretório base do projeto é especificado como o diretório atual (".").
+
+name: SonarCloud analysis
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
+
+jobs:
+  Coverage: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '23.8.0'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test and generate coverage report
+        run:  npm run test:cov
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+
+  Analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          projectBaseDir: .
+        with:
+          args:
+            -Dsonar.projectKey=GabrielMessiasdaRosa_meu-pet-club-api
+            -Dsonar.organization=gabrielmessiasdarosa
