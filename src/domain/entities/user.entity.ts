@@ -23,7 +23,6 @@ export class UserEntity {
   }
   private validate() {
     const validRoles = Object.values(RoleEnum);
-    console.log(validRoles);
     if (!validRoles.includes(this.role)) {
       throw new Error('Role inválida');
     }
