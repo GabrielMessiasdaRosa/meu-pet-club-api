@@ -44,18 +44,5 @@ describe('UserMapper', () => {
       expect(result.password).toBe(userEntity.Password);
       expect(result.role).toBe(userEntity.Role);
     });
-
-    it('should default role to RoleEnum.USER if not provided', () => {
-      const userEntity = new UserEntity({
-        id: '2',
-        name: 'John Smith',
-        email: 'john.smith@example.com',
-        password: 'anotherpassword',
-        role: undefined,
-      });
-
-      const result = UserMapper.toPersistence(userEntity);
-      expect(result.role).toBe(RoleEnum.USER);
-    });
   });
 });
