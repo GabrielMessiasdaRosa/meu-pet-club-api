@@ -98,4 +98,43 @@ describe('User Entity', () => {
     expect(user.Id).toBe(userData.id);
     expect(user.Role).toBe(RoleEnum.ADMIN);
   });
+
+  it('Deve lançar um erro ao tentar atualizar o nome do usuário para um valor inválido', () => {
+    const userData = {
+      id: '123',
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      password: 'securePassword',
+      role: RoleEnum.USER,
+    };
+
+    const user = new UserEntity(userData);
+    expect(() => user.setName('')).toThrow('Nome é obrigatório');
+  });
+
+  it('Deve lançar um erro ao tentar atualizar o email do usuário para um valor inválido', () => {
+    const userData = {
+      id: '123',
+      name: 'John Doe',
+      email: 'email@email.com',
+      password: 'securePassword',
+      role: RoleEnum.USER,
+    };
+
+    const user = new UserEntity(userData);
+    expect(() => user.setEmail('')).toThrow('Email é obrigatório');
+  });
+
+  it('Deve lançar um erro ao tentar atualizar a senha do usuário para um valor inválido', () => {
+    const userData = {
+      id: '123',
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      password: '123123',
+      role: RoleEnum.USER,
+    };
+
+    const user = new UserEntity(userData);
+    expect(() => user.setPassword('')).toThrow('Senha é obrigatória');
+  });
 });

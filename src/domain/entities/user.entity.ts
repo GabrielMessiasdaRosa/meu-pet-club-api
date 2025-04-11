@@ -45,6 +45,8 @@ export class UserEntity {
     }
   }
 
+  // getters
+
   get Id(): string {
     return this.id;
   }
@@ -61,6 +63,23 @@ export class UserEntity {
     return this.role;
   }
 
-  // Domain methods
-  
+  //setters
+  public setName(name: string): void {
+    if (!name) {
+      throw new Error('Nome é obrigatório');
+    }
+    this.name = name;
+  }
+  public setEmail(email: string): void {
+    if (!email) {
+      throw new Error('Email é obrigatório');
+    }
+    this.email = email;
+  }
+  public setPassword(password: string): void {
+    if (!password) {
+      throw new Error('Senha é obrigatória');
+    }
+    this.password = password;
+  }
 }
