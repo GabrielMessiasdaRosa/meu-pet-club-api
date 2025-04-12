@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { RoleEnum } from '../../common/enums/role.enum';
 import { User } from './user.entity';
 
@@ -148,5 +149,49 @@ describe('User Entity', () => {
     };
 
     expect(() => new User(userData)).toThrow('Role inválida');
+  });
+
+  it('Deve lançar um erro ao tentar criar um usuário com um token de redefinição ausente', () => {
+    const userData = {
+      id: '126',
+      name: 'Token User',
+      email: 'token.user@example.com',
+      password: 'password',
+      role: RoleEnum.USER,
+      resetToken: '',
+      resetTokenExpires: new Date(),
+    };
+
+    expect(() => new User(userData)).toThrow(
+      'Token de redefinição é obrigatório',
+    );
+  });
+
+  it('Deve lançar um erro ao tentar criar um usuário com uma data de expiração inválida', () => {
+    const userData = {
+      id: '127',
+      name: 'Expiration User',
+      email: 'expiration.user@example.com',
+      password: 'password',
+      role: RoleEnum.USER,
+      resetToken: randomUUID(),
+      resetTokenExpires: null as any, // Simulando uma data de expiração inválida
+    };
+
+    expect(() => new User(userData)).toThrow('Data de expiração é obrigatória');
+  });
+
+  it('Deve lançar um erro ao tentar criar um usuário com um token que nao seja um uuid', () => {
+    const userData = {
+      id: '128',
+      name: 'UUID User',
+      email: 'uuid.user@example.com',
+      password: 'password',
+      role: RoleEnum.USER,
+      resetToken: 'invalidToken',
+      resetTokenExpires: new Date(),
+    };
+
+    expect(() => new User(userData)).toThrow('Token de redefinição inválido');
   });
 });
