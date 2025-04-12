@@ -1,120 +1,102 @@
-import { CreateUserDto } from '@/application/dtos/user/create-user.dto';
-import { UpdateUserDto } from '@/application/dtos/user/update-user.dto';
-import { RoleEnum } from '@/common/enums/role.enum';
-import { User } from '@/domain/entities/user.entity';
-import { v4 as uuid } from 'uuid';
-import { InMemoryUserRepository } from './mock-user.repository';
-describe('InMemoryUserRepository', () => {
-  it('Deve criar um usuário com sucesso na memoria', async () => {
-    const userRepository = new InMemoryUserRepository();
+import { User } from "@/domain/entities/user.entity";
+import { InMemoryUserRepository } from "./mock-user.repository";
+import { RoleEnum } from "@/common/enums/role.enum";
 
-    const newUserDTO: CreateUserDto = {
-      name: 'Test User',
-      email: 'test@example.com',
-      password: 'password123',
-      role: RoleEnum.USER,
-    };
-    const newUser = new User({
-      id: '123',
-      name: newUserDTO.name,
-      email: newUserDTO.email,
-      password: newUserDTO.password,
-      role: newUserDTO.role,
-    });
-    const createdUser = await userRepository.create(newUser);
+describe('InMemoryUserRepository - create', () => {
+  let repository: InMemoryUserRepository;
 
-    expect(createdUser).toHaveProperty('id', expect.any(String));
-    expect(createdUser).toHaveProperty('name', 'Test User');
-    expect(createdUser).toHaveProperty('email', 'test@example.com');
-    expect(createdUser).toHaveProperty('password', 'password123');
-    expect(createdUser).toHaveProperty('role', RoleEnum.USER);
+  beforeEach(() => {
+    repository = new InMemoryUserRepository();
   });
 
-  it('Deve retornar null ao buscar um usuário inexistente', async () => {
-    const userRepository = new InMemoryUserRepository();
-
-    const createdUser = await userRepository.findById('non-existent-id');
-    expect(createdUser).toBeNull();
-  });
-
-  it('Deve retornar todos os usuários', async () => {
-    const newUser1: CreateUserDto = {
+  it('should create a new user successfully', async () => {
+    // Arrange
+    const userData = new User({
+      id: '1',
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password123',
       role: RoleEnum.USER,
-    };
+    });
 
-    const newUser2: CreateUserDto = {
+    // Act
+    const createdUser = await repository.create(userData);
+
+    // Assert
+    expect(createdUser).toBeDefined();
+    expect(createdUser.Id).toBe('1');
+    expect(createdUser.Name).toBe('John Doe');
+    expect(createdUser.Email).toBe('john@example.com');
+    expect(createdUser.Password).toBe('password123');
+    expect(createdUser.Role).toBe(RoleEnum.USER);
+
+    // Verify it was added to the repository
+    const foundUser = await repository.findById('1');
+    expect(foundUser).not.toBeNull();
+    expect(foundUser?.Id).toBe('1');
+  });
+
+  it('should throw an error when creating a user with existing ID', async () => {
+    // Arrange
+    const existingUser = new User({
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password123',
+      role: RoleEnum.USER,
+    });
+
+    await repository.create(existingUser);
+
+    const duplicateUser = new User({
+      id: '1', // Same ID
       name: 'Jane Doe',
       email: 'jane@example.com',
       password: 'password456',
-      role: RoleEnum.USER,
-    };
-    const user1 = new User({
-      id: uuid(),
-      name: newUser1.name,
-      email: newUser1.email,
-      password: newUser1.password,
-      role: newUser1.role,
+      role: RoleEnum.ADMIN,
     });
-    const user2 = new User({
-      id: uuid(),
-      name: newUser2.name,
-      email: newUser2.email,
-      password: newUser2.password,
-      role: newUser2.role,
-    });
-    const userRepository = new InMemoryUserRepository();
-    await userRepository.create(user1);
-    await userRepository.create(user2);
 
-    const users = await userRepository.findAll();
+    // Act & Assert
+    await expect(repository.create(duplicateUser)).rejects.toThrow(
+      'User already exists',
+    );
 
-    expect(users).toHaveLength(2);
-    expect(users).toEqual(expect.arrayContaining([user1, user2]));
+    // Verify the original user was not modified
+    const foundUser = await repository.findById('1');
+    expect(foundUser?.Name).toBe('John Doe');
+    expect(foundUser?.Email).toBe('john@example.com');
   });
 
-  it('Deve atualizar um usuário com sucesso', async () => {
-    const userRepository = new InMemoryUserRepository();
-    const newUserDto: CreateUserDto = {
-      name: 'Test User',
-      email: 'email@email.com',
-      password: '321654',
+  it('should maintain multiple users correctly', async () => {
+    // Arrange
+    const user1 = new User({
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password123',
       role: RoleEnum.USER,
-    };
-
-    const newUser = new User({
-      id: '123',
-      name: newUserDto.name,
-      email: newUserDto.email,
-      password: newUserDto.password,
-      role: newUserDto.role,
     });
 
-    const createdUser = await userRepository.create(newUser);
+    const user2 = new User({
+      id: '2',
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      password: 'password456',
+      role: RoleEnum.ADMIN,
+    });
 
-    const payload: UpdateUserDto = {
-      id: createdUser.Id,
-      name: 'Updated Test User',
-      email: createdUser.Email,
-      password: createdUser.Password,
-    };
+    // Act
+    await repository.create(user1);
+    await repository.create(user2);
 
-    const updatedUserData: Partial<User> = {
-      Name: payload.name,
-      Email: payload.email,
-      Password: payload.password,
-    };
+    // Assert
+    const allUsers = await repository.findAll();
+    expect(allUsers.length).toBe(2);
 
-    const updatedUser = await userRepository.update(
-      createdUser.Id,
-      updatedUserData,
-    );
-    expect(updatedUser).toHaveProperty('id', '123');
-    expect(updatedUser).toHaveProperty('name', 'Updated Test User');
-    expect(updatedUser).toHaveProperty('email', 'email@email.com');
-    expect(updatedUser).toHaveProperty('password', '321654');
-    expect(updatedUser).toHaveProperty('role', RoleEnum.USER);
+    const foundUser1 = await repository.findById('1');
+    expect(foundUser1?.Name).toBe('John Doe');
+
+    const foundUser2 = await repository.findById('2');
+    expect(foundUser2?.Name).toBe('Jane Doe');
   });
 });
