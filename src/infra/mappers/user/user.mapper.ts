@@ -10,6 +10,13 @@ export class UserMapper {
       password: schema.password,
       role: schema.role,
     });
+    if (schema.resetToken) {
+      domain.setResetToken(schema.resetToken);
+    }
+    if (schema.resetTokenExpires) {
+      domain.setResetTokenExpires(schema.resetTokenExpires);
+    }
+    console.log(domain);
     return domain;
   }
 

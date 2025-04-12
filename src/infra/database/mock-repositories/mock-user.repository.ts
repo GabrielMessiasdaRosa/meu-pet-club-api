@@ -53,4 +53,12 @@ export class InMemoryUserRepository implements IUserRepository {
   async delete(id: string): Promise<void> {
     this.users = this.users.filter((user) => user.Id !== id);
   }
+
+  async findByResetToken(id: string, resetToken: string): Promise<User | null> {
+    const user = await this.findById(id);
+    if (!user || user.ResetToken !== resetToken) {
+      return null;
+    }
+    return user;
+  }
 }

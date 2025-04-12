@@ -176,7 +176,7 @@ describe('MongooseUserRepository', () => {
       const result = await repository.update(id, updateData);
 
       // Assert
-      expect(userModel.findById).toHaveBeenCalledWith(id);
+      expect(userModel.findById).toHaveBeenCalledWith({ _id: id });
       expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(id, mockUser, {
         new: true,
         runValidators: true,
@@ -200,19 +200,14 @@ describe('MongooseUserRepository', () => {
     it('should throw an error when user not found during update', async () => {
       // Arrange
       const id = '5f7c7b5e9d3e2a1a1c9b4b1a';
-
+      const updateData = { Name: 'John Updated' };
       userModel.findById.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(mockUser),
-      });
-
-      userModel.findByIdAndUpdate.mockReturnValue({
         exec: jest.fn().mockResolvedValue(null),
       });
 
-      // Act & Assert
-      await expect(
-        repository.update(id, { Name: 'John Updated' }),
-      ).rejects.toThrow('User not found');
+      await expect(repository.update(id, updateData)).rejects.toThrow(
+        'User not found',
+      );
     });
   });
 
@@ -240,6 +235,111 @@ describe('MongooseUserRepository', () => {
 
       // Act & Assert
       await expect(repository.delete(id)).rejects.toThrow('User not found');
+    });
+  });
+  describe('findByResetToken', () => {
+    it('should return a user when reset token is valid and not expired', async () => {
+      // Arrange
+      const id = '5f7c7b5e9d3e2a1a1c9b4b1a';
+      const resetToken = 'valid-token';
+      const mockUserWithResetToken = {
+      ...mockUser,
+      resetToken: 'valid-token',
+      resetTokenExpires: new Date(Date.now() + 3600000), // 1 hour in the future
+      };
+      
+      userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(mockUserWithResetToken),
+      });
+
+      // Act
+      const result = await repository.findByResetToken(id, resetToken);
+
+      // Assert
+      expect(userModel.findOne).toHaveBeenCalledWith({ _id: id });
+      expect(UserMapper.toDomain).toHaveBeenCalledWith(mockUserWithResetToken);
+      expect(result).toEqual(mockUserDomain);
+    });
+
+    it('should return null when reset token does not match', async () => {
+      // Arrange
+      const id = '5f7c7b5e9d3e2a1a1c9b4b1a';
+      const resetToken = 'wrong-token';
+      const mockUserWithResetToken = {
+      ...mockUser,
+      resetToken: 'valid-token',
+      resetTokenExpires: new Date(Date.now() + 3600000), // 1 hour in the future
+      };
+      
+      userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(mockUserWithResetToken),
+      });
+
+      // Act
+      const result = await repository.findByResetToken(id, resetToken);
+
+      // Assert
+      expect(userModel.findOne).toHaveBeenCalledWith({ _id: id });
+      expect(result).toBeNull();
+    });
+
+    it('should return null when reset token is expired', async () => {
+      // Arrange
+      const id = '5f7c7b5e9d3e2a1a1c9b4b1a';
+      const resetToken = 'valid-token';
+      const mockUserWithResetToken = {
+      ...mockUser,
+      resetToken: 'valid-token',
+      resetTokenExpires: new Date(Date.now() - 3600000), // 1 hour in the past
+      };
+      
+      userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(mockUserWithResetToken),
+      });
+
+      // Act
+      const result = await repository.findByResetToken(id, resetToken);
+
+      // Assert
+      expect(userModel.findOne).toHaveBeenCalledWith({ _id: id });
+      expect(result).toBeNull();
+    });
+
+    it('should return null when reset token expiration is not set', async () => {
+      // Arrange
+      const id = '5f7c7b5e9d3e2a1a1c9b4b1a';
+      const resetToken = 'valid-token';
+      const mockUserWithResetToken = {
+      ...mockUser,
+      resetToken: 'valid-token',
+      resetTokenExpires: null,
+      };
+      
+      userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(mockUserWithResetToken),
+      });
+
+      // Act
+      const result = await repository.findByResetToken(id, resetToken);
+
+      // Assert
+      expect(userModel.findOne).toHaveBeenCalledWith({ _id: id });
+      expect(result).toBeNull();
+    });
+
+    it('should throw an error when user is not found', async () => {
+      // Arrange
+      const id = 'non-existent-id';
+      const resetToken = 'valid-token';
+      
+      userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+      });
+
+      // Act & Assert
+      await expect(repository.findByResetToken(id, resetToken))
+      .rejects.toThrow('User not found');
+      expect(userModel.findOne).toHaveBeenCalledWith({ _id: id });
     });
   });
 });

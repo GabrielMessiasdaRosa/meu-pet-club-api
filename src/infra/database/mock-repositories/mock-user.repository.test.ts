@@ -1,5 +1,6 @@
 import { RoleEnum } from '@/common/enums/role.enum';
 import { User } from '@/domain/entities/user.entity';
+import { randomUUID } from 'crypto';
 import { InMemoryUserRepository } from './mock-user.repository';
 
 describe('InMemoryUserRepository - create', () => {
@@ -240,5 +241,75 @@ describe('InMemoryUserRepository - delete', () => {
   it('should not throw error when deleting non-existent user', async () => {
     // Act & Assert
     await expect(repository.delete('nonexistent')).resolves.not.toThrow();
+  });
+});
+
+describe('InMemoryUserRepository - findByResetToken', () => {
+  let repository: InMemoryUserRepository;
+
+  beforeEach(() => {
+    repository = new InMemoryUserRepository();
+  });
+
+  it('should find a user by reset token', async () => {
+    // Arrange
+    const user = new User({
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password123',
+      role: RoleEnum.USER,
+    });
+    await repository.create(user);
+
+    // Need to implement the method first in the repository
+    const updatedUser = await repository.update('1', {
+      ResetToken: randomUUID(),
+    });
+    // Act
+    const foundUser = await repository.findByResetToken(
+      '1',
+      updatedUser.ResetToken!,
+    );
+
+    // Assert
+    expect(foundUser).not.toBeNull();
+    expect(foundUser?.Id).toBe('1');
+  });
+
+  it('should return null when reset token does not match', async () => {
+    // Arrange
+    const user = new User({
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password123',
+      role: RoleEnum.USER,
+    });
+    await repository.create(user);
+
+    const updatedUser = await repository.update('1', {
+      ResetToken: randomUUID(),
+    });
+
+    // Act
+    const foundUser = await repository.findByResetToken(
+      '1',
+      'updatedUser.ResetToken',
+    );
+
+    // Assert
+    expect(foundUser).toBeNull();
+  });
+
+  it('should return null when user id does not exist', async () => {
+    // Act
+    const foundUser = await repository.findByResetToken(
+      'nonexistent',
+      'some-token',
+    );
+
+    // Assert
+    expect(foundUser).toBeNull();
   });
 });

@@ -10,17 +10,23 @@ export class UserSchema {
   @Prop({ required: true, unique: true })
   _id: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ type: String, required: true, unique: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   password: string;
 
   @Prop({ required: true, enum: RoleEnum })
   role: RoleEnum;
+
+  @Prop({ type: String, default: null })
+  resetToken?: string | null;
+
+  @Prop({ type: Date, default: null })
+  resetTokenExpires?: Date | null;
 }
 
 export const UserSchemaDocument = SchemaFactory.createForClass(UserSchema);

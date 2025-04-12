@@ -36,6 +36,7 @@ export class MongooseUserRepository implements IUserRepository {
   }
 
   async create(userData: User): Promise<User> {
+    console.log('SIIIIUM');
     const user = new this.userModel(UserMapper.toPersistence(userData));
     const createdUser = await user.save();
     const userDomain = UserMapper.toDomain(createdUser);
@@ -43,7 +44,13 @@ export class MongooseUserRepository implements IUserRepository {
   }
 
   async update(id: string, userData: Partial<User>): Promise<User> {
-    const user = await this.userModel.findById(id).exec();
+    console.log(id);
+    const user = await this.userModel
+      .findById({
+        _id: id,
+      })
+      .exec();
+    console.log('&&&&&&&&&&&&&&&', user);
     if (!user) {
       throw new Error('User not found');
     }
@@ -56,12 +63,14 @@ export class MongooseUserRepository implements IUserRepository {
       password: userData.Password ?? existingUser.Password,
       role: userData.Role ?? existingUser.Role,
     });
-    const updatedUser = await this.userModel
-      .findByIdAndUpdate(id, UserMapper.toPersistence(updatedUserEntity), {
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      id,
+      UserMapper.toPersistence(updatedUserEntity),
+      {
         new: true,
         runValidators: true,
-      })
-      .exec();
+      },
+    );
     if (!updatedUser) {
       throw new Error('User not found');
     }
@@ -74,5 +83,25 @@ export class MongooseUserRepository implements IUserRepository {
     if (!result) {
       throw new Error('User not found');
     }
+  }
+
+  async findByResetToken(id: string, resetToken: string): Promise<User | null> {
+    const user = await this.userModel
+      .findOne({
+        _id: id,
+      })
+      .exec();
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (
+      user.resetToken != resetToken ||
+      !user.resetTokenExpires ||
+      user.resetTokenExpires < new Date()
+    ) {
+      return null;
+    }
+    const userDomain = UserMapper.toDomain(user);
+    return userDomain;
   }
 }
