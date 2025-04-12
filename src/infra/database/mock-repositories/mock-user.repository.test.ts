@@ -1,6 +1,6 @@
-import { User } from "@/domain/entities/user.entity";
-import { InMemoryUserRepository } from "./mock-user.repository";
-import { RoleEnum } from "@/common/enums/role.enum";
+import { RoleEnum } from '@/common/enums/role.enum';
+import { User } from '@/domain/entities/user.entity';
+import { InMemoryUserRepository } from './mock-user.repository';
 
 describe('InMemoryUserRepository - create', () => {
   let repository: InMemoryUserRepository;
@@ -159,14 +159,14 @@ describe('InMemoryUserRepository - update', () => {
     const updatedUser = await repository.update('1', {
       Name: 'John Updated',
       Email: 'johnupdated@example.com',
-      Password: 'newpassword'
+      Password: 'newpassword',
     });
 
     // Assert
     expect(updatedUser.Name).toBe('John Updated');
     expect(updatedUser.Email).toBe('johnupdated@example.com');
     expect(updatedUser.Password).toBe('newpassword');
-    
+
     // Verify the update is persistent
     const foundUser = await repository.findById('1');
     expect(foundUser?.Name).toBe('John Updated');
@@ -185,7 +185,7 @@ describe('InMemoryUserRepository - update', () => {
 
     // Act - only update name
     const updatedUser = await repository.update('1', {
-      Name: 'John Updated'
+      Name: 'John Updated',
     });
 
     // Assert
@@ -196,9 +196,11 @@ describe('InMemoryUserRepository - update', () => {
 
   it('should throw error when updating non-existent user', async () => {
     // Act & Assert
-    await expect(repository.update('nonexistent', {
-      Name: 'Updated Name'
-    })).rejects.toThrow('User not found');
+    await expect(
+      repository.update('nonexistent', {
+        Name: 'Updated Name',
+      }),
+    ).rejects.toThrow('User not found');
   });
 });
 
@@ -219,7 +221,7 @@ describe('InMemoryUserRepository - delete', () => {
       role: RoleEnum.USER,
     });
     await repository.create(user);
-    
+
     // Verify user exists first
     let foundUser = await repository.findById('1');
     expect(foundUser).not.toBeNull();
