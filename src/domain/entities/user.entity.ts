@@ -6,6 +6,8 @@ export class User {
   private email: string;
   private password: string;
   private readonly role: RoleEnum;
+  private resetToken?: string;
+  private resetTokenExpires?: Date;
 
   constructor(userData: {
     id: string;
@@ -13,12 +15,16 @@ export class User {
     email: string;
     password: string;
     role: RoleEnum;
+    resetToken?: string;
+    resetTokenExpires?: Date;
   }) {
     this.id = userData.id;
     this.name = userData.name;
     this.email = userData.email;
     this.password = userData.password;
     this.role = userData.role;
+    this.resetToken = userData.resetToken;
+    this.resetTokenExpires = userData.resetTokenExpires;
     this.validate();
   }
   private validate() {
@@ -42,8 +48,19 @@ export class User {
     if (!this.id) {
       throw new Error('ID é obrigatório');
     }
-  }
+    if (!!this.resetToken) {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(this.resetToken)) {
+        throw new Error('Token de redefinição inválido');
+      }
+    }
+    if (this.resetTokenExpires && !this.resetToken) {
+      throw new Error('Token de redefinição é obrigatório');
+    }
 
+    if (this.resetToken && !this.resetTokenExpires) {
+      throw new Error('Data de expiração é obrigatória');
+    }
+  }
   get Id(): string {
     return this.id;
   }
@@ -58,6 +75,12 @@ export class User {
   }
   get Role(): RoleEnum {
     return this.role;
+  }
+  get ResetToken(): string | undefined {
+    return this.resetToken;
+  }
+  get ResetTokenExpires(): Date | undefined {
+    return this.resetTokenExpires;
   }
 
   public setName(name: string): void {
@@ -77,5 +100,17 @@ export class User {
       throw new Error('Senha é obrigatória');
     }
     this.password = password;
+  }
+  public setResetToken(token: string): void {
+    if (!token) {
+      throw new Error('Token de redefinição é obrigatório');
+    }
+    this.resetToken = token;
+  }
+  public setResetTokenExpires(expires: Date): void {
+    if (!expires) {
+      throw new Error('Data de expiração é obrigatória');
+    }
+    this.resetTokenExpires = expires;
   }
 }
