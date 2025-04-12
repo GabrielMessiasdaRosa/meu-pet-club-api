@@ -51,10 +51,10 @@ export class MongooseUserRepository implements IUserRepository {
     const existingUser = UserMapper.toDomain(user);
     const updatedUserEntity = new User({
       id: existingUser.Id,
-      name: userData.Name || existingUser.Name,
-      email: userData.Email || existingUser.Email,
-      password: userData.Password || existingUser.Password,
-      role: userData.Role || existingUser.Role,
+      name: userData.Name ?? existingUser.Name,
+      email: userData.Email ?? existingUser.Email,
+      password: userData.Password ?? existingUser.Password,
+      role: userData.Role ?? existingUser.Role,
     });
     const updatedUser = await this.userModel
       .findByIdAndUpdate(id, UserMapper.toPersistence(updatedUserEntity), {

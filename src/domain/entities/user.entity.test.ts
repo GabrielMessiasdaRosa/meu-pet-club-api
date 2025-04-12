@@ -138,10 +138,6 @@ describe('User Entity', () => {
     expect(() => user.setPassword('')).toThrow('Senha é obrigatória');
   });
 
-  /*     if (!validRoles.includes(this.role)) {
-      throw new Error('Role inválida');
-    } */
-
   it('Deve lançar um erro ao tentar criar um usuário com um papel inválido', () => {
     const userData = {
       id: '125',

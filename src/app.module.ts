@@ -9,7 +9,7 @@ import { UsersModule } from './interface/modules/user.module';
     ConfigModule.forRoot({
       load: [envConfig],
     }),
-    MongooseModule.forRoot(process.env.MONGO_URI || ''),
+    MongooseModule.forRoot(process.env.MONGO_URI ?? ''),
     UsersModule,
   ],
   controllers: [],
