@@ -55,6 +55,10 @@ export class UserService {
     return await this.userRepository.update(id, existingUser);
   }
 
+  async findMe(id: string) {
+    return await this.userRepository.findById(id);
+  }
+
   async delete(id: string) {
     return await this.userRepository.delete(id);
   }

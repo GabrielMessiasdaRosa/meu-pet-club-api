@@ -49,7 +49,11 @@ export class User {
       throw new Error('ID é obrigatório');
     }
     if (!!this.resetToken) {
-      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(this.resetToken)) {
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          this.resetToken,
+        )
+      ) {
         throw new Error('Token de redefinição inválido');
       }
     }
@@ -101,13 +105,13 @@ export class User {
     }
     this.password = password;
   }
-  public setResetToken(token: string): void {
+  public setResetToken(token: string | null): void {
     if (!token) {
       throw new Error('Token de redefinição é obrigatório');
     }
     this.resetToken = token;
   }
-  public setResetTokenExpires(expires: Date): void {
+  public setResetTokenExpires(expires: Date | null): void {
     if (!expires) {
       throw new Error('Data de expiração é obrigatória');
     }
