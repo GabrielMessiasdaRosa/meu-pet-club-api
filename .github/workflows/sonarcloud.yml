@@ -69,3 +69,4 @@ jobs:
           args:
             -Dsonar.projectKey=GabrielMessiasdaRosa_meu-pet-club-api
             -Dsonar.organization=gabrielmessiasdarosa
+            -Dsonar.cpd.exclusions=**/tests/**
