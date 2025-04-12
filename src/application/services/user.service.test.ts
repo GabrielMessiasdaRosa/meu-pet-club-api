@@ -131,7 +131,12 @@ describe('UserService Integration Tests', () => {
       role: RoleEnum.USER,
     });
 
-    await expect(userService.delete('uuid')).resolves.not.toThrow();
+    jest.spyOn(userModel, 'findById').mockResolvedValueOnce(user);
+    jest.spyOn(userRepository, 'findById').mockResolvedValueOnce(user);
+    jest.spyOn(userRepository, 'delete').mockResolvedValueOnce(undefined);
+
+    await expect(userService.delete(user.Id)).resolves.not.toThrow();
+    expect(userRepository.delete).toHaveBeenCalledWith(user.Id);
   });
 
   it('should find all users', async () => {

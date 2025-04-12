@@ -5,7 +5,7 @@ export class User {
   private name: string;
   private email: string;
   private password: string;
-  private role: RoleEnum;
+  private readonly role: RoleEnum;
 
   constructor(userData: {
     id: string;
@@ -44,8 +44,6 @@ export class User {
     }
   }
 
-  // getters
-
   get Id(): string {
     return this.id;
   }
@@ -62,7 +60,6 @@ export class User {
     return this.role;
   }
 
-  //setters
   public setName(name: string): void {
     if (!name) {
       throw new Error('Nome é obrigatório');

@@ -43,9 +43,9 @@ export class InMemoryUserRepository implements IUserRepository {
       throw new Error('User not found');
     }
     // atualiza os dados
-    user.setName(userData.Name || user.Name);
-    user.setEmail(userData.Email || user.Email);
-    user.setPassword(userData.Password || user.Password);
+    user.setName(userData.Name ?? user.Name);
+    user.setEmail(userData.Email ?? user.Email);
+    user.setPassword(userData.Password ?? user.Password);
 
     return user;
   }

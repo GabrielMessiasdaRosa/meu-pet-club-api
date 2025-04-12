@@ -48,9 +48,9 @@ export class UserService {
       role: user.Role,
     });
 
-    existingUser.setName(userData.name || existingUser.Name);
-    existingUser.setEmail(userData.email || existingUser.Email);
-    existingUser.setPassword(userData.password || existingUser.Password);
+    existingUser.setName(userData.name ?? existingUser.Name);
+    existingUser.setEmail(userData.email ?? existingUser.Email);
+    existingUser.setPassword(userData.password ?? existingUser.Password);
 
     return await this.userRepository.update(id, existingUser);
   }
