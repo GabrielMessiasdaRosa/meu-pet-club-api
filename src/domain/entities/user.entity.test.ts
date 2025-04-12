@@ -1,5 +1,5 @@
 import { RoleEnum } from '../../common/enums/role.enum';
-import { UserEntity } from './user.entity';
+import { User } from './user.entity';
 
 describe('User Entity', () => {
   it('Deve lançar um erro ao tentar criar um usuário sem nome', () => {
@@ -11,7 +11,7 @@ describe('User Entity', () => {
       role: RoleEnum.USER,
     };
 
-    expect(() => new UserEntity(userData)).toThrow('Nome é obrigatório');
+    expect(() => new User(userData)).toThrow('Nome é obrigatório');
   });
 
   it('Deve lançar um erro ao tentar criar um usuário sem email', () => {
@@ -23,7 +23,7 @@ describe('User Entity', () => {
       role: RoleEnum.USER,
     };
 
-    expect(() => new UserEntity(userData)).toThrow('Email é obrigatório');
+    expect(() => new User(userData)).toThrow('Email é obrigatório');
   });
 
   it('Deve lançar um erro ao tentar criar um usuário sem senha', () => {
@@ -35,7 +35,7 @@ describe('User Entity', () => {
       role: RoleEnum.USER,
     };
 
-    expect(() => new UserEntity(userData)).toThrow('Senha é obrigatória');
+    expect(() => new User(userData)).toThrow('Senha é obrigatória');
   });
 
   it('Deve lançar um erro ao tentar criar um usuário sem ID', () => {
@@ -47,7 +47,7 @@ describe('User Entity', () => {
       role: RoleEnum.USER,
     };
 
-    expect(() => new UserEntity(userData)).toThrow('ID é obrigatório');
+    expect(() => new User(userData)).toThrow('ID é obrigatório');
   });
 
   it('Deve lançar um erro ao tentar criar um usuário sem email', () => {
@@ -59,7 +59,7 @@ describe('User Entity', () => {
       role: RoleEnum.USER,
     };
 
-    expect(() => new UserEntity(userData)).toThrow('Email é obrigatório');
+    expect(() => new User(userData)).toThrow('Email é obrigatório');
   });
 
   it('Deve criar um usuário com sucesso', () => {
@@ -71,9 +71,9 @@ describe('User Entity', () => {
       role: RoleEnum.USER,
     };
 
-    const user = new UserEntity(userData);
+    const user = new User(userData);
 
-    expect(user).toBeInstanceOf(UserEntity);
+    expect(user).toBeInstanceOf(User);
     expect(user.Name).toBe(userData.name);
     expect(user.Email).toBe(userData.email);
     expect(user.Password).toBe(userData.password);
@@ -90,8 +90,8 @@ describe('User Entity', () => {
       role: RoleEnum.ADMIN,
     };
 
-    const user = new UserEntity(userData);
-    expect(user).toBeInstanceOf(UserEntity);
+    const user = new User(userData);
+    expect(user).toBeInstanceOf(User);
     expect(user.Name).toBe(userData.name);
     expect(user.Email).toBe(userData.email);
     expect(user.Password).toBe(userData.password);
@@ -108,7 +108,7 @@ describe('User Entity', () => {
       role: RoleEnum.USER,
     };
 
-    const user = new UserEntity(userData);
+    const user = new User(userData);
     expect(() => user.setName('')).toThrow('Nome é obrigatório');
   });
 
@@ -121,7 +121,7 @@ describe('User Entity', () => {
       role: RoleEnum.USER,
     };
 
-    const user = new UserEntity(userData);
+    const user = new User(userData);
     expect(() => user.setEmail('')).toThrow('Email é obrigatório');
   });
 
@@ -134,7 +134,23 @@ describe('User Entity', () => {
       role: RoleEnum.USER,
     };
 
-    const user = new UserEntity(userData);
+    const user = new User(userData);
     expect(() => user.setPassword('')).toThrow('Senha é obrigatória');
+  });
+
+  /*     if (!validRoles.includes(this.role)) {
+      throw new Error('Role inválida');
+    } */
+
+  it('Deve lançar um erro ao tentar criar um usuário com um papel inválido', () => {
+    const userData = {
+      id: '125',
+      name: 'Invalid Role User',
+      email: 'invalid.role@example.com',
+      password: 'password',
+      role: 'INVALID_ROLE' as RoleEnum, // Simulando um papel inválido
+    };
+
+    expect(() => new User(userData)).toThrow('Role inválida');
   });
 });

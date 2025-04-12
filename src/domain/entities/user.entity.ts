@@ -1,6 +1,6 @@
 import { RoleEnum } from '../../common/enums/role.enum';
 
-export class UserEntity {
+export class User {
   private readonly id: string;
   private name: string;
   private email: string;
