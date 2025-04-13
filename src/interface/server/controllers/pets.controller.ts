@@ -45,15 +45,66 @@ export class PetsController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de pets recuperada com sucesso',
-    type: HateoasResource,
+    content: {
+      'application/json': {
+        example: {
+          data: [
+            {
+              id: '550e8400-e29b-41d4-a716-446655440000',
+              name: 'Rex',
+              type: 'Cachorro',
+              breed: 'Golden Retriever',
+              age: 3,
+              userId: '550e8400-e29b-41d4-a716-446655440001',
+            },
+            {
+              id: '550e8400-e29b-41d4-a716-446655440003',
+              name: 'Luna',
+              type: 'Gato',
+              breed: 'Siamês',
+              age: 2,
+              userId: '550e8400-e29b-41d4-a716-446655440002',
+            },
+          ],
+          links: [
+            {
+              rel: 'self',
+              href: '/api/v1/pets',
+              method: 'GET',
+            },
+            {
+              rel: 'create',
+              href: '/api/v1/pets',
+              method: 'POST',
+            },
+          ],
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Usuário não está autenticado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 401,
+          message: 'Unauthorized',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
     description: 'Usuário não tem permissão para acessar este recurso',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 403,
+          message: 'Forbidden resource',
+        },
+      },
+    },
   })
   @Roles(RoleEnum.ADMIN, RoleEnum.ROOT)
   @Get()
@@ -70,11 +121,59 @@ export class PetsController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de pets do usuário recuperada com sucesso',
-    type: HateoasResource,
+    content: {
+      'application/json': {
+        example: {
+          data: [
+            {
+              id: '550e8400-e29b-41d4-a716-446655440003',
+              name: 'Luna',
+              type: 'Gato',
+              breed: 'Siamês',
+              age: 2,
+              userId: '550e8400-e29b-41d4-a716-446655440002',
+            },
+            {
+              id: '550e8400-e29b-41d4-a716-446655440004',
+              name: 'Thor',
+              type: 'Cachorro',
+              breed: 'Pug',
+              age: 4,
+              userId: '550e8400-e29b-41d4-a716-446655440002',
+            },
+          ],
+          links: [
+            {
+              rel: 'self',
+              href: '/api/v1/pets/my-pets',
+              method: 'GET',
+            },
+            {
+              rel: 'create',
+              href: '/api/v1/pets',
+              method: 'POST',
+            },
+            {
+              rel: 'user',
+              href: '/api/v1/users/550e8400-e29b-41d4-a716-446655440002',
+              method: 'GET',
+            },
+          ],
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Usuário não está autenticado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 401,
+          message: 'Unauthorized',
+        },
+      },
+    },
   })
   @Get('my-pets')
   async findMyPets(
@@ -93,23 +192,83 @@ export class PetsController {
     name: 'id',
     description: 'ID único do pet',
     type: 'string',
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Pet encontrado com sucesso',
-    type: HateoasResource,
+    content: {
+      'application/json': {
+        example: {
+          data: {
+            id: '550e8400-e29b-41d4-a716-446655440000',
+            name: 'Max',
+            type: 'Cachorro',
+            breed: 'Labrador',
+            age: 4,
+            userId: '550e8400-e29b-41d4-a716-446655440002',
+          },
+          links: [
+            {
+              rel: 'self',
+              href: '/api/v1/pets/550e8400-e29b-41d4-a716-446655440000',
+              method: 'GET',
+            },
+            {
+              rel: 'update',
+              href: '/api/v1/pets/550e8400-e29b-41d4-a716-446655440000',
+              method: 'PATCH',
+            },
+            {
+              rel: 'delete',
+              href: '/api/v1/pets/550e8400-e29b-41d4-a716-446655440000',
+              method: 'DELETE',
+            },
+            {
+              rel: 'owner',
+              href: '/api/v1/users/550e8400-e29b-41d4-a716-446655440002',
+              method: 'GET',
+            },
+          ],
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Pet não encontrado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 404,
+          message: 'Pet não encontrado',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Usuário não está autenticado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 401,
+          message: 'Unauthorized',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
     description: 'Usuário não tem permissão para acessar este recurso',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 403,
+          message: 'Forbidden resource',
+        },
+      },
+    },
   })
   @Get(':id')
   async findOne(
@@ -149,19 +308,79 @@ export class PetsController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Pet criado com sucesso',
-    type: HateoasResource,
+    content: {
+      'application/json': {
+        example: {
+          data: {
+            id: '550e8400-e29b-41d4-a716-446655440005',
+            name: 'Bolt',
+            type: 'Cachorro',
+            breed: 'Husky',
+            age: 1,
+            userId: '550e8400-e29b-41d4-a716-446655440002',
+          },
+          links: [
+            {
+              rel: 'self',
+              href: '/api/v1/pets/550e8400-e29b-41d4-a716-446655440005',
+              method: 'GET',
+            },
+            {
+              rel: 'update',
+              href: '/api/v1/pets/550e8400-e29b-41d4-a716-446655440005',
+              method: 'PATCH',
+            },
+            {
+              rel: 'delete',
+              href: '/api/v1/pets/550e8400-e29b-41d4-a716-446655440005',
+              method: 'DELETE',
+            },
+            {
+              rel: 'owner',
+              href: '/api/v1/users/550e8400-e29b-41d4-a716-446655440002',
+              method: 'GET',
+            },
+          ],
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Dados inválidos',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 400,
+          message: ['name must be a string', 'type must be a string'],
+          error: 'Bad Request',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Usuário não está autenticado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 401,
+          message: 'Unauthorized',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
     description: 'Apenas usuários do tipo CLIENTE podem criar pets',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 403,
+          message: 'Forbidden resource',
+        },
+      },
+    },
   })
   @Roles(RoleEnum.USER)
   @Post()
@@ -183,6 +402,7 @@ export class PetsController {
     name: 'id',
     description: 'ID único do pet',
     type: 'string',
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @ApiBody({
     description: 'Dados para atualização do pet',
@@ -191,23 +411,91 @@ export class PetsController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Pet atualizado com sucesso',
-    type: HateoasResource,
+    content: {
+      'application/json': {
+        example: {
+          data: {
+            id: '550e8400-e29b-41d4-a716-446655440000',
+            name: 'Max (Atualizado)',
+            type: 'Cachorro',
+            breed: 'Labrador',
+            age: 5,
+            userId: '550e8400-e29b-41d4-a716-446655440002',
+          },
+          links: [
+            {
+              rel: 'self',
+              href: '/api/v1/pets/550e8400-e29b-41d4-a716-446655440000',
+              method: 'GET',
+            },
+            {
+              rel: 'update',
+              href: '/api/v1/pets/550e8400-e29b-41d4-a716-446655440000',
+              method: 'PATCH',
+            },
+            {
+              rel: 'delete',
+              href: '/api/v1/pets/550e8400-e29b-41d4-a716-446655440000',
+              method: 'DELETE',
+            },
+            {
+              rel: 'owner',
+              href: '/api/v1/users/550e8400-e29b-41d4-a716-446655440002',
+              method: 'GET',
+            },
+          ],
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Pet não encontrado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 404,
+          message: 'Pet não encontrado',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Dados inválidos',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 400,
+          message: ['id must be a UUID', 'name must be a string'],
+          error: 'Bad Request',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Usuário não está autenticado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 401,
+          message: 'Unauthorized',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
     description: 'Você não tem permissão para atualizar este pet',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 403,
+          message: 'Forbidden resource',
+        },
+      },
+    },
   })
   @Patch(':id')
   async update(
@@ -228,6 +516,7 @@ export class PetsController {
     name: 'id',
     description: 'ID único do pet',
     type: 'string',
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
@@ -236,14 +525,38 @@ export class PetsController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Pet não encontrado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 404,
+          message: 'Pet não encontrado',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Usuário não está autenticado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 401,
+          message: 'Unauthorized',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
     description: 'Você não tem permissão para excluir este pet',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 403,
+          message: 'Forbidden resource',
+        },
+      },
+    },
   })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
