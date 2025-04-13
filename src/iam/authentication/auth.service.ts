@@ -84,17 +84,14 @@ export class AuthService {
       throw new UnauthorizedException(
         'A solicitação expirou, tente novamente.',
       );
-    } else if (!user.ResetToken) {
+    }
+    if (!user.ResetToken) {
       await this.resetUserPasswordTokens(user);
       throw new UnauthorizedException(
         'A solicitação expirou, tente novamente.',
       );
-    } else if (user.ResetToken !== user.ResetToken) {
-      await this.resetUserPasswordTokens(user);
-      throw new UnauthorizedException('Token inválido');
-    } else {
-      return true;
     }
+    return true;
   }
 
   async resetUserPasswordTokens(user: User) {
