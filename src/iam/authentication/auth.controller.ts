@@ -8,7 +8,13 @@ import {
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { ActiveUser } from '../decorators/active-user.decorator';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';
@@ -26,7 +32,20 @@ import { AuthType } from './enums/auth-type.enum';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Encerrar sessão do usuário',
+    description: 'Invalida o token de acesso atual do usuário',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Sessão encerrada com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token de acesso não fornecido ou inválido',
+  })
   @Auth(AuthType.Private)
   @Post('signout')
   @HttpCode(HttpStatus.OK)
@@ -40,6 +59,18 @@ export class AuthController {
     // updated to use userId from ActiveUserData
   }
 
+  @ApiOperation({
+    summary: 'Solicitar redefinição de senha',
+    description: 'Envia um email com instruções para redefinição de senha',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Email de redefinição enviado com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Email não encontrado ou inválido',
+  })
   @ApiBody({
     examples: {
       'application/json': {
@@ -57,12 +88,47 @@ export class AuthController {
     return await this.authService.requestPasswordReset(payload);
   }
 
+  @ApiOperation({
+    summary: 'Redefinir senha',
+    description:
+      'Redefine a senha do usuário usando o token recebido por email',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Senha redefinida com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Token inválido ou expirado',
+  })
+  @ApiBody({
+    description: 'Dados para redefinição de senha',
+    examples: {
+      'application/json': {
+        value: {
+          token: 'token-recebido-por-email'
+        },
+      },
+    },
+  })
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return await this.authService.resetPassword(resetPasswordDto);
   }
 
+  @ApiOperation({
+    summary: 'Cadastrar usuário',
+    description: 'Cria uma nova conta de usuário no sistema',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Usuário criado com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dados inválidos ou email já cadastrado',
+  })
   @ApiBody({
     examples: {
       'application/json': {
@@ -82,6 +148,18 @@ export class AuthController {
     return await this.authService.signUp(signUpDto);
   }
 
+  @ApiOperation({
+    summary: 'Autenticar usuário',
+    description: 'Autentica um usuário e retorna tokens de acesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Autenticação realizada com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Credenciais inválidas',
+  })
   @ApiBody({
     examples: {
       'application/json': {
@@ -111,6 +189,18 @@ export class AuthController {
     return accessToken;
   }
 
+  @ApiOperation({
+    summary: 'Renovar tokens',
+    description: 'Gera um novo token de acesso usando o refresh token',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Tokens renovados com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Refresh token inválido ou expirado',
+  })
   @ApiBody({
     examples: {
       'application/json': {
@@ -125,7 +215,15 @@ export class AuthController {
   @Auth(AuthType.Private)
   @HttpCode(HttpStatus.OK) // changed since the default is 201
   @Post('refresh-tokens')
-  refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshTokens(refreshTokenDto);
+  async refreshTokens(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Req() request: Request,
+  ) {
+    const accessToken = request.headers['authorization']?.split(' ')[1];
+    if (!accessToken) {
+      throw new UnauthorizedException('Access token not provided');
+    }
+    console.log(accessToken);
+    return this.authService.refreshTokens(refreshTokenDto, accessToken);
   }
 }

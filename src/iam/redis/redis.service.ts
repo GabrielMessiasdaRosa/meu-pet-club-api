@@ -7,7 +7,7 @@ export class RedisService {
 
   constructor() {
     this.client = createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
     });
     this.client.connect();
   }
