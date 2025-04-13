@@ -9,17 +9,19 @@ import { AuthController } from './authentication/auth.controller';
 import { AuthService } from './authentication/auth.service';
 import { AccessTokenGuard } from './authentication/guards/access-token/access-token.guard';
 import { AuthGuard } from './authentication/guards/auth/auth.guard';
-import { RefreshTokenIdsStorage } from './authentication/refresh-token-ids.storage/refresh-token-ids.storage';
 import { RolesGuard } from './authorization/guards/roles.guard';
 import jwtConfig from './config/jwt.config';
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
+import { RedisModule } from './redis/redis.module';
+import { TokenIdsStorage } from './redis/storage/token-ids.storage';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'User', schema: UserSchemaDocument }]),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
+    RedisModule,
   ],
   providers: [
     {
@@ -39,7 +41,7 @@ import { HashingService } from './hashing/hashing.service';
       useClass: MongooseUserRepository,
     },
     AccessTokenGuard,
-    RefreshTokenIdsStorage,
+    TokenIdsStorage,
     AuthService,
   ],
   controllers: [AuthController],

@@ -4,10 +4,12 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { ActiveUser } from '../decorators/active-user.decorator';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';
 import { AuthService } from './auth.service';
@@ -28,8 +30,14 @@ export class AuthController {
   @Auth(AuthType.Private)
   @Post('signout')
   @HttpCode(HttpStatus.OK)
-  async signOut(@ActiveUser() user: ActiveUserData) {
-    return await this.authService.signOut(user.sub); // updated to use userId from ActiveUserData
+  async signOut(@ActiveUser() user: ActiveUserData, @Req() request: Request) {
+    const userId = user.sub; // Use user.sub directly
+    const accessToken = request.headers['authorization']; // Extract the access token from the request headers
+    if (!accessToken) {
+      throw new UnauthorizedException('Access token not provided');
+    }
+    await this.authService.signOut(userId, accessToken.split(' ')[1]); // Call the signOut method with userId and accessToken
+    // updated to use userId from ActiveUserData
   }
 
   @ApiBody({

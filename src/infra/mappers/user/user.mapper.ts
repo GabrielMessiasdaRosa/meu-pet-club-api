@@ -16,7 +16,6 @@ export class UserMapper {
     if (schema.resetTokenExpires) {
       domain.setResetTokenExpires(schema.resetTokenExpires);
     }
-    console.log(domain);
     return domain;
   }
 

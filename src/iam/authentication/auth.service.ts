@@ -15,15 +15,15 @@ import jwtConfig from '../config/jwt.config';
 import { HashingService } from '../hashing/hashing.service';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';
 import { sendMail } from '../libs/request-new-password';
+import {
+  InvalidatedRefreshTokenError,
+  TokenIdsStorage,
+} from '../redis/storage/token-ids.storage';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RequestPasswordResetDto } from './dto/request-reset-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import {
-  InvalidatedRefreshTokenError,
-  RefreshTokenIdsStorage,
-} from './refresh-token-ids.storage/refresh-token-ids.storage';
 
 @Injectable()
 export class AuthService {
@@ -36,7 +36,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
-    private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
+    private readonly tokenIdsStorage: TokenIdsStorage,
   ) {}
   async requestPasswordReset({ email }: RequestPasswordResetDto) {
     const user = await this.userRepository.findByEmail(email);
@@ -103,8 +103,9 @@ export class AuthService {
     await this.userRepository.update(user.Id, {});
   }
 
-  async signOut(userId: string) {
-    await this.refreshTokenIdsStorage.invalidate(userId);
+  async signOut(userId: string, acessToken: string) {
+    await this.tokenIdsStorage.addToBlacklist(acessToken);
+    await this.tokenIdsStorage.invalidate(userId);
   }
 
   async signUp(signUpDto: SignUpDto) {
@@ -162,14 +163,14 @@ export class AuthService {
       if (!user) {
         throw new UnauthorizedException('User not found');
       }
-      const isValid = await this.refreshTokenIdsStorage.validate(
+      const isValid = await this.tokenIdsStorage.validate(
         user.Id,
         refreshTokenId,
       );
       if (!isValid) {
         throw new UnauthorizedException();
       } else {
-        await this.refreshTokenIdsStorage.invalidate(user.Id);
+        await this.tokenIdsStorage.invalidate(user.Id);
       }
       return this.generateTokens(user);
     } catch (err) {
@@ -197,7 +198,7 @@ export class AuthService {
         refreshTokenId,
       }),
     ]);
-    await this.refreshTokenIdsStorage.insert(user.Id, refreshTokenId);
+    await this.tokenIdsStorage.insert(user.Id, refreshTokenId);
     return {
       accessToken,
       refreshToken,
