@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import jwtConfig from 'src/iam/config/jwt.config';
 import { REQUEST_USER_KEY } from 'src/iam/constants/iam.constants';
+import { RefreshTokenIdsStorage } from '../../refresh-token-ids.storage/refresh-token-ids.storage';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -17,6 +18,8 @@ export class AccessTokenGuard implements CanActivate {
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+
+    private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -24,6 +27,7 @@ export class AccessTokenGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException();
     }
+
     try {
       const payload = await this.jwtService.verifyAsync(
         token,

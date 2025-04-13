@@ -187,8 +187,10 @@ export class AuthService {
         user.Id,
         this.jwtConfiguration.accessTokenTtl,
         {
+          // @audit-ok Sempre que for atualizar o token, atualizar aqui também
           email: user.Email,
           name: user.Name,
+          role: user.Role,
         },
       ),
       this.signToken(user.Id, this.jwtConfiguration.refreshTokenTtl, {

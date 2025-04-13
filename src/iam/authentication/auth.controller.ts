@@ -6,8 +6,10 @@ import {
   Post,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { ActiveUser } from '../decorators/active-user.decorator';
+import { ActiveUserData } from '../interfaces/active-user-data.interface';
 import { AuthService } from './auth.service';
 import { Auth } from './decorators/auth.decorator';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -18,15 +20,16 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { AuthType } from './enums/auth-type.enum';
 
 @ApiTags('auth')
-@Auth(AuthType.Private)
+@Auth(AuthType.Public)
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
+  @ApiBearerAuth()
+  @Auth(AuthType.Private)
   @Post('signout')
   @HttpCode(HttpStatus.OK)
-  async signOut(@Body('userId') userId: string) {
-    return await this.authService.signOut(userId);
+  async signOut(@ActiveUser() user: ActiveUserData) {
+    return await this.authService.signOut(user.sub); // updated to use userId from ActiveUserData
   }
 
   @ApiBody({
@@ -71,6 +74,17 @@ export class AuthController {
     return await this.authService.signUp(signUpDto);
   }
 
+  @ApiBody({
+    examples: {
+      'application/json': {
+        value: {
+          email: 'user@example.com',
+          password: 'securepassword',
+        },
+      },
+    },
+    description: 'Sign in user',
+  })
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   async signIn(
@@ -88,6 +102,19 @@ export class AuthController {
     });
     return accessToken;
   }
+
+  @ApiBody({
+    examples: {
+      'application/json': {
+        value: {
+          refreshToken: 'your-refresh-token', // added refreshToken field
+        },
+      },
+    },
+    description: 'Refresh tokens',
+  })
+  @ApiBearerAuth()
+  @Auth(AuthType.Private)
   @HttpCode(HttpStatus.OK) // changed since the default is 201
   @Post('refresh-tokens')
   refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {

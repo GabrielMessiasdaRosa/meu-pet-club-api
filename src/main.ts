@@ -21,7 +21,6 @@ async function bootstrap() {
     .setTitle('meu-pet-club-api')
     .setDescription('meu-pet-club-api')
     .setVersion('0.1')
-    .addTag('meu-pet-club-api')
 
     .addBearerAuth()
     .build();

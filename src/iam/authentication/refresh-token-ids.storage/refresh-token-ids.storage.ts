@@ -12,7 +12,7 @@ export class RefreshTokenIdsStorage
   private redisClient: Redis;
 
   onApplicationBootstrap() {
-    // TODO, ideally, we should move this to a separate module called "RedisModule"
+    // @audit deve mudar para um modulo RedisModule
     this.redisClient = new Redis({
       host: process.env.REDIS_HOST!,
       port: parseInt(process.env.REDIS_PORT!),

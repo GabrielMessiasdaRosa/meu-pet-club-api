@@ -10,6 +10,7 @@ import { AuthService } from './authentication/auth.service';
 import { AccessTokenGuard } from './authentication/guards/access-token/access-token.guard';
 import { AuthGuard } from './authentication/guards/auth/auth.guard';
 import { RefreshTokenIdsStorage } from './authentication/refresh-token-ids.storage/refresh-token-ids.storage';
+import { RolesGuard } from './authorization/guards/roles.guard';
 import jwtConfig from './config/jwt.config';
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
@@ -28,6 +29,10 @@ import { HashingService } from './hashing/hashing.service';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
     {
       provide: 'UserRepositoryModel',

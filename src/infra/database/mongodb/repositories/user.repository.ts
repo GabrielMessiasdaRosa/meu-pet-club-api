@@ -36,7 +36,6 @@ export class MongooseUserRepository implements IUserRepository {
   }
 
   async create(userData: User): Promise<User> {
-    console.log('SIIIIUM');
     const user = new this.userModel(UserMapper.toPersistence(userData));
     const createdUser = await user.save();
     const userDomain = UserMapper.toDomain(createdUser);
@@ -44,13 +43,11 @@ export class MongooseUserRepository implements IUserRepository {
   }
 
   async update(id: string, userData: Partial<User>): Promise<User> {
-    console.log(id);
     const user = await this.userModel
       .findById({
         _id: id,
       })
       .exec();
-    console.log('&&&&&&&&&&&&&&&', user);
     if (!user) {
       throw new Error('User not found');
     }
