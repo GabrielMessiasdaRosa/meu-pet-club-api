@@ -6,7 +6,7 @@ import { HashingService } from './hashing.service';
 export class BcryptService implements HashingService {
   async hash(data: string): Promise<string> {
     const salt = await bcrypt.genSalt();
-    const hashed = bcrypt.hash(data, salt);
+    const hashed = await bcrypt.hash(data, salt);
     return hashed;
   }
 
