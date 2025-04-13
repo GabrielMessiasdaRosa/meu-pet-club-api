@@ -39,7 +39,20 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: example
+    volumes:
+      - redis-data:/data
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    ports:
+      - "8082:8081"
+    environment:
+      REDIS_HOSTS: "local:redis:6379"
+    depends_on:
+      - redis
 
 volumes:
   mongo-data:
+    driver: local
+  redis-data:
     driver: local
