@@ -1,12 +1,32 @@
 import { User } from '@/domain/entities/user.entity';
 import { HateoasResource } from './hateoas-resource.presenter';
 
+// Interface para representar o usuário sem a senha
+export type UserWithoutPassword = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  resetToken?: string;
+  resetTokenExpires?: Date;
+};
+
 /**
  * Presenter para recurso de usuário único
  */
 export class UserPresenter {
-  static toHateoas(user: User): HateoasResource<User> {
-    const userId = user.Id; // Usando o getter correto da entidade User
+  static toHateoas(user: User): HateoasResource<UserWithoutPassword> {
+    // Cria uma cópia do usuário sem a senha
+    const userWithoutPassword: UserWithoutPassword = {
+      id: user.Id,
+      name: user.Name,
+      email: user.Email,
+      role: user.Role,
+      resetToken: user.ResetToken,
+      resetTokenExpires: user.ResetTokenExpires,
+    };
+
+    const userId = user.Id;
     const links = [
       {
         href: `/users/${userId}`,
@@ -25,13 +45,23 @@ export class UserPresenter {
       },
     ];
 
-    return new HateoasResource(user, links);
+    return new HateoasResource(userWithoutPassword, links);
   }
 
   /**
    * Converte o resultado para o usuário atual com links específicos
    */
-  static toHateoasMe(user: User): HateoasResource<User> {
+  static toHateoasMe(user: User): HateoasResource<UserWithoutPassword> {
+    // Cria uma cópia do usuário sem a senha
+    const userWithoutPassword: UserWithoutPassword = {
+      id: user.Id,
+      name: user.Name,
+      email: user.Email,
+      role: user.Role,
+      resetToken: user.ResetToken,
+      resetTokenExpires: user.ResetTokenExpires,
+    };
+
     const links = [
       {
         href: '/users/me',
@@ -45,13 +75,23 @@ export class UserPresenter {
       },
     ];
 
-    return new HateoasResource(user, links);
+    return new HateoasResource(userWithoutPassword, links);
   }
 
   /**
    * Converte uma lista de usuários para formato HATEOAS
    */
-  static toHateoasList(users: User[]): HateoasResource<User[]> {
+  static toHateoasList(users: User[]): HateoasResource<UserWithoutPassword[]> {
+    // Remove a senha de todos os usuários na lista
+    const usersWithoutPassword: UserWithoutPassword[] = users.map((user) => ({
+      id: user.Id,
+      name: user.Name,
+      email: user.Email,
+      role: user.Role,
+      resetToken: user.ResetToken,
+      resetTokenExpires: user.ResetTokenExpires,
+    }));
+
     const links = [
       {
         href: '/users',
@@ -65,6 +105,6 @@ export class UserPresenter {
       },
     ];
 
-    return new HateoasResource(users, links);
+    return new HateoasResource(usersWithoutPassword, links);
   }
 }
