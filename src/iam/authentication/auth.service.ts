@@ -102,8 +102,8 @@ export class AuthService {
     await this.userRepository.update(user.Id, {});
   }
 
-  async signOut(userId: string, acessToken: string) {
-    await this.tokenIdsStorage.addToBlacklist(acessToken);
+  async signOut(userId: string, accessToken: string) {
+    await this.tokenIdsStorage.addToBlacklist(accessToken);
     await this.tokenIdsStorage.invalidate(userId);
   }
 
