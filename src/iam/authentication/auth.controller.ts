@@ -1,10 +1,4 @@
 import {
-  AuthMessageResponse,
-  AuthPresenter,
-  SignInResponse,
-} from '@/interface/server/presenters/auth.presenter';
-import { HateoasResource } from '@/interface/server/presenters/hateoas-resource.presenter';
-import {
   Body,
   Controller,
   HttpCode,
@@ -23,6 +17,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import {
+  AuthMessageResponse,
+  AuthPresenter,
+  SignInResponse,
+} from 'src/interface/server/presenters/auth.presenter';
+import { HateoasResource } from 'src/interface/server/presenters/hateoas-resource.presenter';
 import { REQUEST_USER_KEY } from '../constants/iam.constants';
 import { ActiveUser } from '../decorators/active-user.decorator';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';
@@ -309,10 +309,8 @@ export class AuthController {
       'application/json': {
         example: {
           data: {
-            accessToken:
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJuYW1lIjoiSm9hbyBTaWx2YSIsImVtYWlsIjoiam9hby5zaWx2YUBleGVtcGxvLmNvbSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNjc3NjY0MjYzLCJleHAiOjE2Nzc2Njc4NjN9.tWXtbBGOSfKBWiiDYpPmO9HQEJfLLUIrLXKKkkVFqeQ',
-            refreshToken:
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJqdGkiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDEiLCJpYXQiOjE2Nzc2NjQyNjMsImV4cCI6MTY3NzY2Nzg2M30.vzOB0Q77UQHcQjn7PgZKKgEJTOlTjRVLBpQ0n7NSFhI',
+            accessToken: 'eyJhbGciOiJIUzI...',
+            refreshToken: 'eyJhbGcCI6IkpXV...',
             user: {
               id: '550e8400-e29b-41d4-a716-446655440000',
               name: 'João Silva',
