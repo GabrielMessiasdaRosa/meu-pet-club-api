@@ -35,8 +35,7 @@ export class TokenIdsStorage {
   async isBlacklisted(accessToken: string): Promise<boolean> {
     const key = `blacklist-${accessToken}`;
     const result = await this.redisService.get(key);
-    console.log('&&&&&&&&&&&&&&', result);
-    console.log('&&&&&&&&&&&&&&', key);
+
     return result === 'blacklisted';
   }
 
