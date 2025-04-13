@@ -2,7 +2,7 @@ services:
   nestjs-meu-pet-club:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     env_file:

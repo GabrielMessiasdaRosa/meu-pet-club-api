@@ -125,7 +125,15 @@ export class AuthController {
   @Auth(AuthType.Private)
   @HttpCode(HttpStatus.OK) // changed since the default is 201
   @Post('refresh-tokens')
-  refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshTokens(refreshTokenDto);
+  async refreshTokens(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Req() request: Request,
+  ) {
+    const accessToken = request.headers['authorization']?.split(' ')[1];
+    if (!accessToken) {
+      throw new UnauthorizedException('Access token not provided');
+    }
+    console.log(accessToken);
+    return this.authService.refreshTokens(refreshTokenDto, accessToken);
   }
 }

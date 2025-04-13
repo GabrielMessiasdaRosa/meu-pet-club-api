@@ -147,7 +147,7 @@ export class AuthService {
     return await this.generateTokens(user);
   }
 
-  async refreshTokens(refreshTokenDto: RefreshTokenDto) {
+  async refreshTokens(refreshTokenDto: RefreshTokenDto, accessToken: string) {
     try {
       const { sub, refreshTokenId } = await this.jwtService.verifyAsync<
         Pick<ActiveUserData, 'sub'> & { refreshTokenId: string }
@@ -167,6 +167,7 @@ export class AuthService {
       if (!isValid) {
         throw new UnauthorizedException();
       } else {
+        await this.tokenIdsStorage.addToBlacklist(accessToken);
         await this.tokenIdsStorage.invalidate(user.Id);
       }
       return this.generateTokens(user);
