@@ -3,6 +3,7 @@ import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/us
 import { Inject, Injectable } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { CreateUserDto } from '../dtos/user/create-user.dto';
+import { UpdateMeDto } from '../dtos/user/update-me.dto';
 import { UpdateUserDto } from '../dtos/user/update-user.dto';
 
 @Injectable()
@@ -35,7 +36,7 @@ export class UserService {
     return await this.userRepository.create(newUser);
   }
 
-  async update(id: string, userData: UpdateUserDto) {
+  async update(id: string, userData: UpdateUserDto | UpdateMeDto) {
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new Error('User not found');
@@ -53,6 +54,10 @@ export class UserService {
     existingUser.setPassword(userData.password ?? existingUser.Password);
 
     return await this.userRepository.update(id, existingUser);
+  }
+
+  async findMe(id: string) {
+    return await this.userRepository.findById(id);
   }
 
   async delete(id: string) {
