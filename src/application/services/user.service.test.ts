@@ -2,9 +2,11 @@ import { RoleEnum } from '@/common/enums/role.enum';
 import { User } from '@/domain/entities/user.entity';
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
 import { UserSchemaDocument } from '@/infra/database/mongodb/schemas/user.schema';
+import { ForbiddenException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
+import { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
 import { CreateUserDto } from '../dtos/user/create-user.dto';
 import { UpdateUserDto } from '../dtos/user/update-user.dto';
 import { UserService } from './user.service';
@@ -14,12 +16,45 @@ describe('UserService Integration Tests', () => {
   let userRepository: MongooseUserRepository;
   let userModel: Model<UserSchemaDocument>;
 
+  // Mock do usuário autenticado para os testes
+  const mockCurrentUser: ActiveUserData = {
+    sub: 'user123',
+    email: 'admin@example.com',
+    name: 'Admin User',
+    role: RoleEnum.ADMIN,
+  };
+
+  // Mock do usuário ROOT para testes específicos
+  const mockRootUser: ActiveUserData = {
+    sub: 'root123',
+    email: 'root@example.com',
+    name: 'Root User',
+    role: RoleEnum.ROOT,
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
         {
           provide: 'UserRepository',
+          useValue: {
+            findAll: jest.fn(),
+            findById: jest.fn(),
+            findByEmail: jest.fn(),
+            create: jest.fn().mockImplementation((dto) =>
+              Promise.resolve({
+                ...dto,
+                id: 'uuid',
+                password: 'hashedPassword',
+              }),
+            ),
+            update: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+        {
+          provide: MongooseUserRepository,
           useValue: {
             findAll: jest.fn(),
             findById: jest.fn(),
@@ -60,7 +95,7 @@ describe('UserService Integration Tests', () => {
     userModel = module.get<Model<UserSchemaDocument>>(getModelToken('User'));
   });
 
-  it('should create a new user', async () => {
+  it('should create a new USER role user by ROOT', async () => {
     const createUserDto: CreateUserDto = {
       name: 'John Doe',
       email: 'john.doe@example.com',
@@ -68,11 +103,54 @@ describe('UserService Integration Tests', () => {
       role: RoleEnum.USER,
     };
 
-    const result = await userService.create(createUserDto);
+    const result = await userService.create(createUserDto, mockRootUser);
 
     expect(result).toEqual(
       new User({ ...createUserDto, id: 'uuid', password: 'hashedPassword' }),
     );
+  });
+
+  it('should create a new ADMIN role user by ROOT user', async () => {
+    const createUserDto: CreateUserDto = {
+      name: 'Admin User',
+      email: 'admin.new@example.com',
+      password: 'password123',
+      role: RoleEnum.ADMIN,
+    };
+
+    const result = await userService.create(createUserDto, mockRootUser);
+
+    expect(result).toEqual(
+      new User({ ...createUserDto, id: 'uuid', password: 'hashedPassword' }),
+    );
+  });
+
+  it('should create a new ROOT role user by ROOT user', async () => {
+    const createUserDto: CreateUserDto = {
+      name: 'Root User',
+      email: 'root.new@example.com',
+      password: 'password123',
+      role: RoleEnum.ROOT,
+    };
+
+    const result = await userService.create(createUserDto, mockRootUser);
+
+    expect(result).toEqual(
+      new User({ ...createUserDto, id: 'uuid', password: 'hashedPassword' }),
+    );
+  });
+
+  it('should throw ForbiddenException when ADMIN tries to create ROOT user', async () => {
+    const createUserDto: CreateUserDto = {
+      name: 'Root User Attempt',
+      email: 'root.attempt@example.com',
+      password: 'password123',
+      role: RoleEnum.ROOT,
+    };
+
+    await expect(
+      userService.create(createUserDto, mockCurrentUser),
+    ).rejects.toThrow(ForbiddenException);
   });
 
   it('should find a user by ID', async () => {

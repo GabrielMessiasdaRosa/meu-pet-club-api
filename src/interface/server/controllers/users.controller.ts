@@ -302,14 +302,16 @@ export class UsersController {
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'Usuário não tem permissão para criar outros usuários',
+    description:
+      'Usuário não tem permissão para criar outros usuários ou para criar usuário ROOT',
   })
   @Roles(RoleEnum.ADMIN, RoleEnum.ROOT)
   @Post()
   async create(
     @Body() createUserDto: CreateUserDto,
+    @ActiveUser() currentUser: ActiveUserData,
   ): Promise<HateoasResource<UserWithoutPassword>> {
-    const newUser = await this.userService.create(createUserDto);
+    const newUser = await this.userService.create(createUserDto, currentUser);
     return UserPresenter.toHateoas(newUser);
   }
 
@@ -467,15 +469,21 @@ export class UsersController {
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'Usuário não tem permissão para atualizar este usuário',
+    description:
+      'Usuário não tem permissão para atualizar este usuário (ADMIN não podem atualizar usuários USER)',
   })
   @Roles(RoleEnum.ADMIN, RoleEnum.ROOT)
   @Patch(':id')
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @ActiveUser() activeUser: ActiveUserData,
   ): Promise<HateoasResource<UserWithoutPassword>> {
-    const updatedUser = await this.userService.update(id, updateUserDto);
+    const updatedUser = await this.userService.update(
+      id,
+      updateUserDto,
+      activeUser,
+    );
     if (!updatedUser) {
       throw new HttpException(
         'Erro ao atualizar usuário',

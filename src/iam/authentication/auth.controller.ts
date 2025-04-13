@@ -23,6 +23,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { REQUEST_USER_KEY } from '../constants/iam.constants';
 import { ActiveUser } from '../decorators/active-user.decorator';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';
 import { AuthService } from './auth.service';
@@ -258,6 +259,10 @@ export class AuthController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Dados inválidos',
   })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Permissão negada para criar usuário ROOT',
+  })
   @ApiBody({
     schema: {
       type: 'object',
@@ -283,8 +288,13 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   async signUp(
     @Body() signUpDto: SignUpDto,
+    @Req() request: Request,
   ): Promise<HateoasResource<AuthMessageResponse>> {
-    const result = await this.authService.signUp(signUpDto);
+    // Verifica se há um usuário autenticado na requisição
+    // Isso permite que usuários autenticados possam criar outros usuários
+    const authenticatedUser = request[REQUEST_USER_KEY] as ActiveUserData;
+
+    const result = await this.authService.signUp(signUpDto, authenticatedUser);
     return AuthPresenter.toHateoasSignUp(result.message);
   }
 
