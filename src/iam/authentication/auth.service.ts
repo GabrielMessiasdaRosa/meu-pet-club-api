@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -7,6 +8,7 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
+import { RoleEnum } from '@/common/enums/role.enum';
 import { User } from '@/domain/entities/user.entity';
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
 import { InjectModel } from '@nestjs/mongoose';
@@ -100,13 +102,34 @@ export class AuthService {
     await this.userRepository.update(user.Id, {});
   }
 
-  async signOut(userId: string, acessToken: string) {
-    await this.tokenIdsStorage.addToBlacklist(acessToken);
+  async signOut(userId: string, accessToken: string) {
+    await this.tokenIdsStorage.addToBlacklist(accessToken);
     await this.tokenIdsStorage.invalidate(userId);
   }
 
-  async signUp(signUpDto: SignUpDto) {
+  async signUp(signUpDto: SignUpDto, currentUser?: ActiveUserData) {
     try {
+      // Verificando se está tentando criar um usuário ROOT
+      if (signUpDto.role === RoleEnum.ROOT) {
+        // Se for um registro público ou o usuário atual não for ROOT, não permite
+        if (!currentUser || currentUser.role !== RoleEnum.ROOT) {
+          throw new ForbiddenException(
+            'Apenas usuários ROOT podem criar outros usuários ROOT',
+          );
+        }
+      }
+
+      // Verificando se um ADMIN está tentando criar um usuário USER
+      if (
+        currentUser &&
+        currentUser.role === RoleEnum.ADMIN &&
+        signUpDto.role === RoleEnum.USER
+      ) {
+        throw new ForbiddenException(
+          'Usuários ADMIN não podem criar usuários do tipo USER',
+        );
+      }
+
       const user = new User({
         id: randomUUID(),
         email: signUpDto.email,
@@ -121,6 +144,9 @@ export class AuthService {
         message: 'User created successfully',
       };
     } catch (err) {
+      if (err instanceof ForbiddenException) {
+        throw err;
+      }
       if (err.code === 11000) {
         // MongoDB duplicate key error
         throw new ConflictException('Email already in use');
