@@ -108,8 +108,10 @@ export class PetsController {
   })
   @Roles(RoleEnum.ADMIN, RoleEnum.ROOT)
   @Get()
-  async findAll(): Promise<HateoasResource<PetResponse[]>> {
-    const pets = await this.petService.findAll();
+  async findAll(
+    @ActiveUser() user: ActiveUserData,
+  ): Promise<HateoasResource<PetResponse[]>> {
+    const pets = await this.petService.findAll(user);
     return PetPresenter.toHateoasList(pets);
   }
 
@@ -275,22 +277,10 @@ export class PetsController {
     @Param('id') id: string,
     @ActiveUser() user: ActiveUserData,
   ): Promise<HateoasResource<PetResponse>> {
-    const pet = await this.petService.findById(id);
+    const pet = await this.petService.findById(id, user);
 
     if (!pet) {
       throw new HttpException('Pet não encontrado', HttpStatus.NOT_FOUND);
-    }
-
-    // Verifica se o usuário tem permissão para visualizar o pet
-    if (
-      pet.UserId !== user.sub &&
-      user.role !== RoleEnum.ADMIN &&
-      user.role !== RoleEnum.ROOT
-    ) {
-      throw new HttpException(
-        'Você não tem permissão para visualizar este pet',
-        HttpStatus.FORBIDDEN,
-      );
     }
 
     return PetPresenter.toHateoas(pet);

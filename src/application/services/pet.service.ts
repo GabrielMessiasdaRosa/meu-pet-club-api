@@ -19,12 +19,38 @@ export class PetService {
     private readonly petRepository: IPetRepository,
   ) {}
 
-  async findAll() {
-    return await this.petRepository.findAll();
+  async findAll(currentUser: ActiveUserData) {
+    // Se for ROOT ou ADMIN, pode ver todos os pets
+    if (
+      currentUser.role === RoleEnum.ROOT ||
+      currentUser.role === RoleEnum.ADMIN
+    ) {
+      return await this.petRepository.findAll();
+    }
+
+    // Se for um usuário comum, só pode ver seus próprios pets
+    return await this.petRepository.findByUserId(currentUser.sub);
   }
 
-  async findById(id: string) {
-    return await this.petRepository.findById(id);
+  async findById(id: string, currentUser: ActiveUserData) {
+    const pet = await this.petRepository.findById(id);
+
+    if (!pet) {
+      throw new NotFoundException('Pet não encontrado');
+    }
+
+    // Verifica se o pet pertence ao usuário atual ou se é um administrador/root
+    if (
+      pet.UserId !== currentUser.sub &&
+      currentUser.role !== RoleEnum.ROOT &&
+      currentUser.role !== RoleEnum.ADMIN
+    ) {
+      throw new ForbiddenException(
+        'Você não tem permissão para acessar este pet',
+      );
+    }
+
+    return pet;
   }
 
   async findByUserId(userId: string) {
@@ -59,13 +85,12 @@ export class PetService {
       throw new NotFoundException('Pet não encontrado');
     }
 
-    // Verificando se o usuário é ROOT (não pode atualizar pets)
-    if (currentUser.role === RoleEnum.ROOT) {
-      throw new ForbiddenException('Usuários ROOT não podem atualizar pets');
-    }
-
-    // Verificando se o pet pertence ao usuário atual
-    if (pet.UserId !== currentUser.sub) {
+    // Verificando se o pet pertence ao usuário atual ou se é um administrador/root
+    if (
+      pet.UserId !== currentUser.sub &&
+      currentUser.role !== RoleEnum.ROOT &&
+      currentUser.role !== RoleEnum.ADMIN
+    ) {
       throw new ForbiddenException(
         'Você não tem permissão para atualizar este pet',
       );
@@ -87,8 +112,12 @@ export class PetService {
       throw new NotFoundException('Pet não encontrado');
     }
 
-    // Verificando se o pet pertence ao usuário atual ou se é um administrador
-    if (pet.UserId !== currentUser.sub && currentUser.role !== RoleEnum.ROOT) {
+    // Verificando se o pet pertence ao usuário atual ou se é um administrador/root
+    if (
+      pet.UserId !== currentUser.sub &&
+      currentUser.role !== RoleEnum.ROOT &&
+      currentUser.role !== RoleEnum.ADMIN
+    ) {
       throw new ForbiddenException(
         'Você não tem permissão para deletar este pet',
       );
