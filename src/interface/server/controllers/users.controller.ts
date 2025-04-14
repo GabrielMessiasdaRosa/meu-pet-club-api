@@ -1,6 +1,7 @@
 import { CreateUserDto } from '@/application/dtos/user/create-user.dto';
 import { UpdateMeDto } from '@/application/dtos/user/update-me.dto';
 import { UpdateUserDto } from '@/application/dtos/user/update-user.dto';
+import { PetService } from '@/application/services/pet.service';
 import { UserService } from '@/application/services/user.service';
 import { RoleEnum } from '@/common/enums/role.enum';
 import {
@@ -38,7 +39,10 @@ import {
 @Auth(AuthType.Private)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly petService: PetService,
+  ) {}
 
   @ApiOperation({
     summary: 'Listar todos os usuários',
@@ -65,6 +69,19 @@ export class UsersController {
                 type: 'string',
                 enum: ['USER', 'ADMIN', 'ROOT'],
                 example: 'USER',
+              },
+              pets: {
+                type: 'array',
+                items: {
+                  properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                    type: { type: 'string' },
+                    breed: { type: 'string' },
+                    age: { type: 'number' },
+                    userId: { type: 'string' },
+                  },
+                },
               },
             },
           },
@@ -95,7 +112,17 @@ export class UsersController {
   @Get()
   async findAll(): Promise<HateoasResource<UserWithoutPassword[]>> {
     const users = await this.userService.findAll();
-    return UserPresenter.toHateoasList(users);
+
+    // Busca os pets para cada usuário e cria um mapa
+    const usersPets = new Map();
+    for (const user of users) {
+      const pets = await this.petService.findByUserId(user.Id);
+      if (pets.length > 0) {
+        usersPets.set(user.Id, pets);
+      }
+    }
+
+    return UserPresenter.toHateoasList(users, usersPets);
   }
 
   @ApiOperation({
@@ -120,6 +147,19 @@ export class UsersController {
               type: 'string',
               enum: ['USER', 'ADMIN', 'ROOT'],
               example: 'USER',
+            },
+            pets: {
+              type: 'array',
+              items: {
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                  breed: { type: 'string' },
+                  age: { type: 'number' },
+                  userId: { type: 'string' },
+                },
+              },
             },
           },
         },
@@ -153,7 +193,11 @@ export class UsersController {
     if (!userData) {
       throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
     }
-    return UserPresenter.toHateoasMe(userData);
+
+    // Busca os pets do usuário
+    const pets = await this.petService.findByUserId(userData.Id);
+
+    return UserPresenter.toHateoasMe(userData, pets);
   }
 
   @ApiOperation({
@@ -188,6 +232,19 @@ export class UsersController {
               type: 'string',
               enum: ['USER', 'ADMIN', 'ROOT'],
               example: 'USER',
+            },
+            pets: {
+              type: 'array',
+              items: {
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                  breed: { type: 'string' },
+                  age: { type: 'number' },
+                  userId: { type: 'string' },
+                },
+              },
             },
           },
         },
@@ -225,7 +282,11 @@ export class UsersController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    return UserPresenter.toHateoasMe(updatedUser);
+
+    // Busca os pets do usuário
+    const pets = await this.petService.findByUserId(updatedUser.Id);
+
+    return UserPresenter.toHateoasMe(updatedUser, pets);
   }
 
   @ApiOperation({
@@ -345,6 +406,19 @@ export class UsersController {
               enum: ['USER', 'ADMIN', 'ROOT'],
               example: 'USER',
             },
+            pets: {
+              type: 'array',
+              items: {
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                  breed: { type: 'string' },
+                  age: { type: 'number' },
+                  userId: { type: 'string' },
+                },
+              },
+            },
           },
         },
         links: {
@@ -389,7 +463,11 @@ export class UsersController {
     if (!user) {
       throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
     }
-    return UserPresenter.toHateoas(user);
+
+    // Busca os pets do usuário
+    const pets = await this.petService.findByUserId(user.Id);
+
+    return UserPresenter.toHateoas(user, pets);
   }
 
   @ApiOperation({
@@ -438,6 +516,19 @@ export class UsersController {
               type: 'string',
               enum: ['USER', 'ADMIN', 'ROOT'],
               example: 'USER',
+            },
+            pets: {
+              type: 'array',
+              items: {
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                  breed: { type: 'string' },
+                  age: { type: 'number' },
+                  userId: { type: 'string' },
+                },
+              },
             },
           },
         },
@@ -490,7 +581,11 @@ export class UsersController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    return UserPresenter.toHateoas(updatedUser);
+
+    // Busca os pets do usuário
+    const pets = await this.petService.findByUserId(updatedUser.Id);
+
+    return UserPresenter.toHateoas(updatedUser, pets);
   }
 
   @ApiOperation({

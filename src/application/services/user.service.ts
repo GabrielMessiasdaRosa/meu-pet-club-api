@@ -7,12 +7,15 @@ import { v4 as uuid } from 'uuid';
 import { CreateUserDto } from '../dtos/user/create-user.dto';
 import { UpdateMeDto } from '../dtos/user/update-me.dto';
 import { UpdateUserDto } from '../dtos/user/update-user.dto';
+import { PetService } from './pet.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject('UserRepository')
     private readonly userRepository: MongooseUserRepository,
+    @Inject(PetService)
+    private readonly petService: PetService,
   ) {}
 
   async findAll() {
@@ -100,5 +103,15 @@ export class UserService {
 
   async delete(id: string) {
     return await this.userRepository.delete(id);
+  }
+
+  async findUserWithPets(id: string) {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      return null;
+    }
+
+    const pets = await this.petService.findByUserId(user.Id);
+    return { user, pets };
   }
 }
