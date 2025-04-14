@@ -1,7 +1,8 @@
 import { RoleEnum } from '@/common/enums/role.enum';
 import { User } from '@/domain/entities/user.entity';
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { EmailService } from '@/infra/email/email.service';
+import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
 import { v4 as uuid } from 'uuid';
 import { CreateUserDto } from '../dtos/user/create-user.dto';
@@ -11,11 +12,14 @@ import { PetService } from './pet.service';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(
     @Inject('UserRepository')
     private readonly userRepository: MongooseUserRepository,
     @Inject(PetService)
     private readonly petService: PetService,
+    private readonly emailService: EmailService,
   ) {}
 
   async findAll() {
@@ -59,7 +63,33 @@ export class UserService {
       password: userData.password,
       role: userData.role,
     });
-    return await this.userRepository.create(newUser);
+
+    const createdUser = await this.userRepository.create(newUser);
+
+    // Enviar credenciais por e-mail apenas se o usuário criador for ADMIN ou ROOT
+    if (
+      currentUser.role === RoleEnum.ADMIN ||
+      currentUser.role === RoleEnum.ROOT
+    ) {
+      try {
+        await this.emailService.sendUserCredentials(
+          createdUser.Email,
+          createdUser.Name,
+          userData.password, // Usando a senha não criptografada para envio por e-mail
+        );
+        this.logger.log(
+          `Credenciais enviadas com sucesso para o usuário: ${createdUser.Email}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Erro ao enviar credenciais para o usuário: ${createdUser.Email}`,
+          error,
+        );
+        // Não interrompe o fluxo se o envio de email falhar
+      }
+    }
+
+    return createdUser;
   }
 
   async update(

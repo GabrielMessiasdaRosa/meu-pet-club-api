@@ -1,4 +1,10 @@
 import {
+  AuthMessageResponse,
+  AuthPresenter,
+  SignInResponse,
+} from '@/interface/server/presenters/auth.presenter';
+import { HateoasResource } from '@/interface/server/presenters/hateoas-resource.presenter';
+import {
   Body,
   Controller,
   HttpCode,
@@ -17,12 +23,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import {
-  AuthMessageResponse,
-  AuthPresenter,
-  SignInResponse,
-} from 'src/interface/server/presenters/auth.presenter';
-import { HateoasResource } from 'src/interface/server/presenters/hateoas-resource.presenter';
 import { REQUEST_USER_KEY } from '../constants/iam.constants';
 import { ActiveUser } from '../decorators/active-user.decorator';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';

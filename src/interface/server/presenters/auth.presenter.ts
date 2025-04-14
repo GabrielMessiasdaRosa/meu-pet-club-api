@@ -1,198 +1,197 @@
 import { User } from '@/domain/entities/user.entity';
-import { HateoasResource } from './hateoas-resource.presenter';
-
-// Interface para representar o usuário autenticado sem a senha
-export type AuthUserData = {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-};
-
-// Interface para representar a resposta de login
-export type SignInResponse = {
-  accessToken: string;
-  refreshToken: string;
-  user: AuthUserData;
-};
-
-// Interface para representar a resposta para operações de autenticação simples
-export type AuthMessageResponse = {
-  message: string;
-};
+import { HateoasLink, HateoasResource } from './hateoas-resource.presenter';
 
 /**
- * Presenter para recursos de autenticação
+ * Interface para representar a resposta de uma mensagem de autenticação
+ */
+export interface AuthMessageResponse {
+  message: string;
+}
+
+/**
+ * Interface para representar a resposta de login
+ */
+export interface SignInResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  };
+}
+
+/**
+ * Classe responsável por criar respostas HATEOAS para operações de autenticação
  */
 export class AuthPresenter {
   /**
-   * Formata a resposta de login com links HATEOAS
-   */
-  static toHateoasSignIn(signInData: {
-    accessToken: string;
-    refreshToken: string;
-    user: User;
-  }): HateoasResource<SignInResponse> {
-    // Remove a senha do usuário antes de enviar na resposta
-    const userData: AuthUserData = {
-      id: signInData.user.Id,
-      name: signInData.user.Name,
-      email: signInData.user.Email,
-      role: signInData.user.Role,
-    };
-
-    // Cria a resposta formatada
-    const responseData: SignInResponse = {
-      accessToken: signInData.accessToken,
-      refreshToken: signInData.refreshToken,
-      user: userData,
-    };
-
-    // Links relacionados à autenticação
-    const links = [
-      {
-        href: '/auth/refresh-tokens',
-        rel: 'refresh',
-        method: 'POST',
-      },
-      {
-        href: '/auth/signout',
-        rel: 'signout',
-        method: 'POST',
-      },
-      {
-        href: '/users/me',
-        rel: 'profile',
-        method: 'GET',
-      },
-    ];
-
-    return new HateoasResource(responseData, links);
-  }
-
-  /**
-   * Formata a resposta de registro com links HATEOAS
+   * Cria uma resposta HATEOAS para o cadastro de usuário
    */
   static toHateoasSignUp(
     message: string,
   ): HateoasResource<AuthMessageResponse> {
-    const responseData: AuthMessageResponse = {
-      message,
-    };
-
-    const links = [
+    const links: HateoasLink[] = [
       {
-        href: '/auth/signin',
-        rel: 'signin',
+        rel: 'self',
+        href: '/api/v1/auth/signup',
+        method: 'POST',
+      },
+      {
+        rel: 'sign-in',
+        href: '/api/v1/auth/signin',
         method: 'POST',
       },
     ];
 
-    return new HateoasResource(responseData, links);
+    return new HateoasResource<AuthMessageResponse>({ message }, links);
   }
 
   /**
-   * Formata a resposta de renovação de tokens com links HATEOAS
-   */
-  static toHateoasRefreshTokens(tokenData: {
-    accessToken: string;
-    refreshToken: string;
-    user: User;
-  }): HateoasResource<SignInResponse> {
-    // Remove a senha do usuário antes de enviar na resposta
-    const userData: AuthUserData = {
-      id: tokenData.user.Id,
-      name: tokenData.user.Name,
-      email: tokenData.user.Email,
-      role: tokenData.user.Role,
-    };
-
-    // Cria a resposta formatada
-    const responseData: SignInResponse = {
-      accessToken: tokenData.accessToken,
-      refreshToken: tokenData.refreshToken,
-      user: userData,
-    };
-
-    const links = [
-      {
-        href: '/auth/signout',
-        rel: 'signout',
-        method: 'POST',
-      },
-      {
-        href: '/users/me',
-        rel: 'profile',
-        method: 'GET',
-      },
-    ];
-
-    return new HateoasResource(responseData, links);
-  }
-
-  /**
-   * Formata a resposta de solicitação de redefinição de senha com links HATEOAS
-   */
-  static toHateoasPasswordResetRequest(
-    message: string,
-  ): HateoasResource<AuthMessageResponse> {
-    const responseData: AuthMessageResponse = {
-      message,
-    };
-
-    const links = [
-      {
-        href: '/auth/reset-password',
-        rel: 'reset-password',
-        method: 'POST',
-      },
-      {
-        href: '/auth/signin',
-        rel: 'signin',
-        method: 'POST',
-      },
-    ];
-
-    return new HateoasResource(responseData, links);
-  }
-
-  /**
-   * Formata a resposta de redefinição de senha com links HATEOAS
+   * Cria uma resposta HATEOAS para o reset de senha
    */
   static toHateoasPasswordReset(
     message: string,
   ): HateoasResource<AuthMessageResponse> {
-    const responseData: AuthMessageResponse = {
-      message,
-    };
-
-    const links = [
+    const links: HateoasLink[] = [
       {
-        href: '/auth/signin',
-        rel: 'signin',
+        rel: 'self',
+        href: '/api/v1/auth/reset-password',
+        method: 'POST',
+      },
+      {
+        rel: 'sign-in',
+        href: '/api/v1/auth/signin',
         method: 'POST',
       },
     ];
 
-    return new HateoasResource(responseData, links);
+    return new HateoasResource<AuthMessageResponse>({ message }, links);
   }
 
   /**
-   * Formata a resposta de logout com links HATEOAS
+   * Cria uma resposta HATEOAS para a solicitação de reset de senha
    */
-  static toHateoasSignOut(): HateoasResource<AuthMessageResponse> {
-    const responseData: AuthMessageResponse = {
-      message: 'Sessão encerrada com sucesso',
-    };
-
-    const links = [
+  static toHateoasPasswordResetRequest(
+    message: string,
+  ): HateoasResource<AuthMessageResponse> {
+    const links: HateoasLink[] = [
       {
-        href: '/auth/signin',
-        rel: 'signin',
+        rel: 'self',
+        href: '/api/v1/auth/request-password-reset',
+        method: 'POST',
+      },
+      {
+        rel: 'reset-password',
+        href: '/api/v1/auth/reset-password',
         method: 'POST',
       },
     ];
 
-    return new HateoasResource(responseData, links);
+    return new HateoasResource<AuthMessageResponse>({ message }, links);
+  }
+
+  /**
+   * Cria uma resposta HATEOAS para o login
+   */
+  static toHateoasSignIn(authResult: {
+    accessToken: string;
+    refreshToken: string;
+    user: User;
+  }): HateoasResource<SignInResponse> {
+    const links: HateoasLink[] = [
+      {
+        rel: 'self',
+        href: '/api/v1/auth/signin',
+        method: 'POST',
+      },
+      {
+        rel: 'refresh',
+        href: '/api/v1/auth/refresh-tokens',
+        method: 'POST',
+      },
+      {
+        rel: 'sign-out',
+        href: '/api/v1/auth/signout',
+        method: 'POST',
+      },
+    ];
+
+    const response: SignInResponse = {
+      accessToken: authResult.accessToken,
+      refreshToken: authResult.refreshToken,
+      user: {
+        id: authResult.user.Id,
+        email: authResult.user.Email,
+        name: authResult.user.Name,
+        role: authResult.user.Role,
+      },
+    };
+
+    return new HateoasResource<SignInResponse>(response, links);
+  }
+
+  /**
+   * Cria uma resposta HATEOAS para o refresh de tokens
+   */
+  static toHateoasRefreshTokens(authResult: {
+    accessToken: string;
+    refreshToken: string;
+    user: User;
+  }): HateoasResource<SignInResponse> {
+    const links: HateoasLink[] = [
+      {
+        rel: 'self',
+        href: '/api/v1/auth/refresh-tokens',
+        method: 'POST',
+      },
+      {
+        rel: 'sign-in',
+        href: '/api/v1/auth/signin',
+        method: 'POST',
+      },
+      {
+        rel: 'sign-out',
+        href: '/api/v1/auth/signout',
+        method: 'POST',
+      },
+    ];
+
+    const response: SignInResponse = {
+      accessToken: authResult.accessToken,
+      refreshToken: authResult.refreshToken,
+      user: {
+        id: authResult.user.Id,
+        email: authResult.user.Email,
+        name: authResult.user.Name,
+        role: authResult.user.Role,
+      },
+    };
+
+    return new HateoasResource<SignInResponse>(response, links);
+  }
+
+  /**
+   * Cria uma resposta HATEOAS para o logout
+   */
+  static toHateoasSignOut(): HateoasResource<AuthMessageResponse> {
+    const links: HateoasLink[] = [
+      {
+        rel: 'self',
+        href: '/api/v1/auth/signout',
+        method: 'POST',
+      },
+      {
+        rel: 'sign-in',
+        href: '/api/v1/auth/signin',
+        method: 'POST',
+      },
+    ];
+
+    return new HateoasResource<AuthMessageResponse>(
+      { message: 'Sessão encerrada com sucesso' },
+      links,
+    );
   }
 }
