@@ -1,0 +1,32 @@
+### Variáveis globais
+@baseUrl = http://localhost:3000
+
+@userId = {{createUser.response.body.id}}
+@userEmail = {{createUser.response.body.email}}
+### Criar uma nova conta
+# @name createUser
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "name": "User",
+    "email": "user255@example.com",
+    "password": "password123",
+    "role": "USER"
+}
+
+### Buscar um usuario
+# @name getUser
+GET {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+
+### Atualizar um usuario
+# @name updateUser
+PATCH  {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+    "name": "Updated User33",
+    "email": "{{userEmail}}"
+}
