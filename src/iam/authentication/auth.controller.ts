@@ -1,10 +1,4 @@
 import {
-  AuthMessageResponse,
-  AuthPresenter,
-  SignInResponse,
-} from '@/interface/server/presenters/auth.presenter';
-import { HateoasResource } from '@/interface/server/presenters/hateoas-resource.presenter';
-import {
   Body,
   Controller,
   HttpCode,
@@ -23,6 +17,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import {
+  AuthMessageResponse,
+  AuthPresenter,
+  SignInResponse,
+} from 'src/interface/server/presenters/auth.presenter';
+import { HateoasResource } from 'src/interface/server/presenters/hateoas-resource.presenter';
 import { REQUEST_USER_KEY } from '../constants/iam.constants';
 import { ActiveUser } from '../decorators/active-user.decorator';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';
@@ -305,34 +305,36 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Autenticação realizada com sucesso',
-    type: HateoasResource,
-    schema: {
-      properties: {
-        data: {
-          properties: {
-            accessToken: { type: 'string' },
-            refreshToken: { type: 'string' },
+    content: {
+      'application/json': {
+        example: {
+          data: {
+            accessToken: 'eyJhbGciOiJIUzI...',
+            refreshToken: 'eyJhbGcCI6IkpXV...',
             user: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                name: { type: 'string' },
-                email: { type: 'string' },
-                role: { type: 'string' },
-              },
+              id: '550e8400-e29b-41d4-a716-446655440000',
+              name: 'João Silva',
+              email: 'joao.silva@exemplo.com',
+              role: 'USER',
             },
           },
-        },
-        links: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              href: { type: 'string' },
-              rel: { type: 'string' },
-              method: { type: 'string' },
+          links: [
+            {
+              rel: 'self',
+              href: '/api/v1/auth/signin',
+              method: 'POST',
             },
-          },
+            {
+              rel: 'refresh',
+              href: '/api/v1/auth/refresh-tokens',
+              method: 'POST',
+            },
+            {
+              rel: 'sign-out',
+              href: '/api/v1/auth/signout',
+              method: 'POST',
+            },
+          ],
         },
       },
     },
@@ -340,6 +342,15 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Credenciais inválidas',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 401,
+          message: 'Email ou senha inválidos',
+          error: 'Unauthorized',
+        },
+      },
+    },
   })
   @ApiBody({
     schema: {
@@ -383,34 +394,38 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Tokens renovados com sucesso',
-    type: HateoasResource,
-    schema: {
-      properties: {
-        data: {
-          properties: {
-            accessToken: { type: 'string' },
-            refreshToken: { type: 'string' },
+    content: {
+      'application/json': {
+        example: {
+          data: {
+            accessToken:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJuYW1lIjoiSm9hbyBTaWx2YSIsImVtYWlsIjoiam9hby5zaWx2YUBleGVtcGxvLmNvbSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNjc3NjY0MzYzLCJleHAiOjE2Nzc2Njc5NjN9.nXWG0RA41xd-EG_NBH_NW_vBbRdlYzwDJX7rR8IQdNk',
+            refreshToken:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJqdGkiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDIiLCJpYXQiOjE2Nzc2NjQzNjMsImV4cCI6MTY3NzY2Nzk2M30.WbAAlS0h5CR9kQOEbNCwljXLFHbmK94vE1c6VebBzZc',
             user: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                name: { type: 'string' },
-                email: { type: 'string' },
-                role: { type: 'string' },
-              },
+              id: '550e8400-e29b-41d4-a716-446655440000',
+              name: 'João Silva',
+              email: 'joao.silva@exemplo.com',
+              role: 'USER',
             },
           },
-        },
-        links: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              href: { type: 'string' },
-              rel: { type: 'string' },
-              method: { type: 'string' },
+          links: [
+            {
+              rel: 'self',
+              href: '/api/v1/auth/refresh-tokens',
+              method: 'POST',
             },
-          },
+            {
+              rel: 'sign-in',
+              href: '/api/v1/auth/signin',
+              method: 'POST',
+            },
+            {
+              rel: 'sign-out',
+              href: '/api/v1/auth/signout',
+              method: 'POST',
+            },
+          ],
         },
       },
     },
@@ -418,6 +433,15 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Refresh token inválido ou expirado',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 401,
+          message: 'Refresh token inválido ou expirado',
+          error: 'Unauthorized',
+        },
+      },
+    },
   })
   @ApiBody({
     schema: {

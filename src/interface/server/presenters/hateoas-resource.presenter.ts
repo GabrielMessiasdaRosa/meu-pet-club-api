@@ -1,9 +1,9 @@
 /**
  * Interface para representar um link HATEOAS
  */
-interface Link {
-  href: string;
+export interface HateoasLink {
   rel: string;
+  href: string;
   method: string;
 }
 
@@ -12,9 +12,9 @@ interface Link {
  */
 export class HateoasResource<T> {
   data: T;
-  links: Link[];
+  links: HateoasLink[];
 
-  constructor(data: T, links: Link[]) {
+  constructor(data: T, links: HateoasLink[]) {
     this.data = data;
     this.links = links;
   }

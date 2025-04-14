@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import envConfig from './config/env-config';
 import { IamModule } from './iam/iam.module';
+import { PetsModule } from './interface/modules/pet.module';
 import { UsersModule } from './interface/modules/user.module';
 
 @Module({
@@ -13,6 +14,7 @@ import { UsersModule } from './interface/modules/user.module';
     MongooseModule.forRoot(process.env.MONGO_URI ?? ''),
     IamModule,
     UsersModule,
+    PetsModule,
   ],
   controllers: [],
   providers: [],
