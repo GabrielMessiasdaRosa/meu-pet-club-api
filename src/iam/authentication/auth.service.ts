@@ -16,7 +16,8 @@ import { randomUUID } from 'crypto';
 import jwtConfig from '../config/jwt.config';
 import { HashingService } from '../hashing/hashing.service';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';
-import { sendMail } from '../libs/request-new-password';
+
+import { EmailService } from '@/infra/email/email.service';
 import {
   InvalidatedRefreshTokenError,
   TokenIdsStorage,
@@ -34,7 +35,7 @@ export class AuthService {
     @Inject('UserRepository')
     private userRepository: MongooseUserRepository,
     private readonly hashingService: HashingService,
-
+    private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
@@ -52,16 +53,13 @@ export class AuthService {
       ResetTokenExpires: new Date(Date.now() + fiveMinutes),
     });
     // Send password reset email with resetToken
-    await sendMail(email, resetToken);
+    await this.emailService.sendPasswordReset(email, resetToken);
     return {
       message: 'Email de recuperação de senha enviado.',
     };
   }
 
   async resetPassword({ email, newPassword, resetToken }: ResetPasswordDto) {
-    /*   const user = await this.userRepository.findOne({
-      where: { email: email, resetToken: resetToken },
-    }); */
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {

@@ -50,6 +50,10 @@ describe('AuthService', () => {
     addToBlacklist: jest.fn(),
   };
 
+  const mockEmailService = {
+    sendPasswordReset: jest.fn(),
+  };
+
   const mockJwtConfig = {
     secret: 'test-secret',
     audience: 'test-audience',
@@ -64,6 +68,7 @@ describe('AuthService', () => {
     authService = new AuthService(
       mockUserRepository as any,
       mockHashingService as any,
+      mockEmailService as any,
       mockJwtService as any,
       mockJwtConfig as any,
       mockTokenIdsStorage as any,
@@ -220,7 +225,7 @@ describe('AuthService', () => {
     });
   });
 
-/*   describe('requestPasswordReset', () => {
+  /*   describe('requestPasswordReset', () => {
     it('should create reset token and send email', async () => {
       const requestDto = { email: 'test@example.com' };
 

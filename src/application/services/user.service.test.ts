@@ -2,6 +2,7 @@ import { RoleEnum } from '@/common/enums/role.enum';
 import { Pet } from '@/domain/entities/pet.entity';
 import { User } from '@/domain/entities/user.entity';
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
+import { EmailService } from '@/infra/email/email.service';
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
@@ -15,6 +16,7 @@ describe('UserService Integration Tests', () => {
   let userService: UserService;
   let userRepository: MongooseUserRepository;
   let petService: PetService;
+  let emailService: EmailService;
 
   // Mock do usuário autenticado para os testes
   const mockCurrentUser: ActiveUserData = {
@@ -67,12 +69,19 @@ describe('UserService Integration Tests', () => {
             findByUserId: jest.fn(),
           },
         },
+        {
+          provide: EmailService,
+          useValue: {
+            sendUserCredentials: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
     userService = module.get<UserService>(UserService);
     userRepository = module.get('UserRepository');
     petService = module.get<PetService>(PetService);
+    emailService = module.get<EmailService>(EmailService);
   });
 
   it('should create a new USER role user by ROOT', async () => {
