@@ -183,7 +183,7 @@ describe('UserService Integration Tests', () => {
     );
   });
 
-  it('should throw ForbiddenException when ADMIN tries to create USER', async () => {
+  it('should allow ADMIN to create USER (CLIENTE)', async () => {
     const createUserDto: CreateUserDto = {
       name: 'Regular User',
       email: 'user@example.com',
@@ -191,12 +191,11 @@ describe('UserService Integration Tests', () => {
       role: RoleEnum.USER,
     };
 
-    await expect(
-      userService.create(createUserDto, mockCurrentUser),
-    ).rejects.toThrow(ForbiddenException);
-    await expect(
-      userService.create(createUserDto, mockCurrentUser),
-    ).rejects.toThrow('Usuários ADMIN não podem criar usuários do tipo USER');
+    const result = await userService.create(createUserDto, mockCurrentUser);
+
+    expect(result).toEqual(
+      new User({ ...createUserDto, id: 'uuid', password: 'hashedPassword' }),
+    );
   });
 
   it('should update a user', async () => {
@@ -259,7 +258,7 @@ describe('UserService Integration Tests', () => {
     expect(result).toEqual(updatedUser);
   });
 
-  it('should throw ForbiddenException when ADMIN tries to update USER', async () => {
+  it('should allow ADMIN to update USER (CLIENTE)', async () => {
     const userId = 'user456';
     const existingUser = new User({
       id: userId,
@@ -275,16 +274,23 @@ describe('UserService Integration Tests', () => {
       email: 'updated.by.admin@example.com',
     };
 
-    jest.spyOn(userRepository, 'findById').mockResolvedValue(existingUser);
+    const updatedUser = new User({
+      id: userId,
+      name: updateUserDto.name!,
+      email: updateUserDto.email!,
+      password: existingUser.Password,
+      role: existingUser.Role,
+    });
 
-    await expect(
-      userService.update(userId, updateUserDto, mockCurrentUser),
-    ).rejects.toThrow(ForbiddenException);
-    await expect(
-      userService.update(userId, updateUserDto, mockCurrentUser),
-    ).rejects.toThrow(
-      'Usuários ADMIN não podem atualizar usuários do tipo USER',
+    jest.spyOn(userRepository, 'findById').mockResolvedValue(existingUser);
+    jest.spyOn(userRepository, 'update').mockResolvedValue(updatedUser);
+
+    const result = await userService.update(
+      userId,
+      updateUserDto,
+      mockCurrentUser,
     );
+    expect(result).toEqual(updatedUser);
   });
 
   it('should delete a user', async () => {

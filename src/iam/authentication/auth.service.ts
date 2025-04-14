@@ -121,15 +121,7 @@ export class AuthService {
           }
         }
 
-        // Verificando se um ADMIN está tentando criar um usuário USER
-        if (
-          currentUser.role === RoleEnum.ADMIN &&
-          signUpDto.role === RoleEnum.USER
-        ) {
-          throw new ForbiddenException(
-            'Usuários ADMIN não podem criar usuários do tipo USER',
-          );
-        }
+        // Note: Removemos a validação que impedia ADMIN de criar USER (CLIENTE)
       }
 
       const user = new User({

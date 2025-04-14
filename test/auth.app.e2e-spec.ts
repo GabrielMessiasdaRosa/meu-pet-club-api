@@ -224,11 +224,11 @@ describe('Autenticação (e2e)', () => {
       accessToken = response.body.data.accessToken;
     });
 
-    it('deve impedir que ADMIN crie um usuário comum', () => {
+    it('deve permitir que ADMIN crie um usuário do tipo CLIENTE (USER)', () => {
       const newUser = {
-        email: 'usuario2@meupetclub.com.br',
+        email: 'cliente@meupetclub.com.br',
         password: 'Senha@123',
-        name: 'Usuário 2',
+        name: 'Cliente Criado por Admin',
         role: RoleEnum.USER,
       };
 
@@ -236,7 +236,7 @@ describe('Autenticação (e2e)', () => {
         .post('/auth/signup')
         .set('Authorization', `Bearer ${accessToken}`)
         .send(newUser)
-        .expect(403);
+        .expect(201);
     });
   });
 });

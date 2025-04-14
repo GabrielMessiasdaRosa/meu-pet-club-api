@@ -47,17 +47,7 @@ export class UserService {
       }
     }
 
-    // Verifica se é um ADMIN tentando criar um usuário USER
-    if (
-      currentUser.role === RoleEnum.ADMIN &&
-      userData.role === RoleEnum.USER
-    ) {
-      throw new ForbiddenException(
-        'Usuários ADMIN não podem criar usuários do tipo USER',
-      );
-    }
-
-    // ADMIN só pode criar outros ADMIN, ROOT pode criar qualquer tipo
+    // ADMIN pode criar usuários USER (CLIENTE) e outros ADMIN, ROOT pode criar qualquer tipo
     const newUser = new User({
       id: uuid(),
       name: userData.name,
@@ -109,12 +99,7 @@ export class UserService {
 
     // Se temos um usuário autenticado e não é uma atualização do próprio usuário
     if (currentUser && currentUser.sub !== id) {
-      // Verifica se é um ADMIN tentando atualizar um USER
-      if (currentUser.role === RoleEnum.ADMIN && user.Role === RoleEnum.USER) {
-        throw new ForbiddenException(
-          'Usuários ADMIN não podem atualizar usuários do tipo USER',
-        );
-      }
+      // Verificação removida para permitir que ADMIN atualize usuários USER (CLIENTE)
     }
 
     const existingUser = new User({
