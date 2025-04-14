@@ -1,5 +1,6 @@
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
 import { UserSchemaDocument } from '@/infra/database/mongodb/schemas/user.schema';
+import { EmailModule } from '@/infra/email/email.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -22,6 +23,7 @@ import { TokenIdsStorage } from './redis/storage/token-ids.storage';
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     RedisModule,
+    EmailModule,
   ],
   providers: [
     {
