@@ -1,25 +1,68 @@
 # Meu Pet Club API
 
-API de gerenciamento de usuários e pets desenvolvida com NestJS, MongoDB e Redis.
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+![SonarQube](https://img.shields.io/badge/SonarQube-4E9BCD?style=for-the-badge&logo=sonarqube&logoColor=white)
 
-## Índice
+API de gerenciamento de usuários e pets desenvolvida com NestJS, MongoDB e Redis, seguindo os princípios da Arquitetura Limpa (Clean Architecture).
 
-- [Como Executar o Projeto](#como-executar-o-projeto)
-- [URLs Disponíveis](#urls-disponíveis)
-- [Visão Geral](#visão-geral)
-- [Arquitetura](#arquitetura)
-- [Funcionalidades](#funcionalidades)
-- [Entidades](#entidades)
-- [Autenticação e Autorização](#autenticação-e-autorização)
-- [Endpoints da API](#endpoints-da-api)
-- [Tecnologias Utilizadas](#tecnologias-utilizadas)
+## 📋 Índice
 
-## Como Executar o Projeto
+- [🚀 Como Executar o Projeto](#-como-executar-o-projeto)
+- [🔗 URLs Disponíveis](#-urls-disponíveis)
+- [👁️ Visão Geral](#️-visão-geral)
+- [🏗️ Arquitetura](#️-arquitetura)
+- [✨ Funcionalidades](#-funcionalidades)
+- [📝 Entidades](#-entidades)
+- [🔐 Autenticação e Autorização](#-autenticação-e-autorização)
+- [🛣️ Endpoints da API](#️-endpoints-da-api)
+- [🧪 Testes](#-testes)
+- [👨‍💻 Desenvolvimento](#-desenvolvimento)
+- [🛠️ Tecnologias Utilizadas](#️-tecnologias-utilizadas)
+
+## 🚀 Como Executar o Projeto
 
 ### Pré-requisitos
 
 - Docker e Docker Compose
-- Node.js (opcional para desenvolvimento local)
+- Node.js e npm (opcional para desenvolvimento local)
+
+### Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+```bash
+# Ambiente
+NODE_ENV=development
+
+# MongoDB
+MONGO_URI=mongodb://root:example@localhost:27017/meu-pet-club?authSource=admin
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=example
+
+# JWT
+JWT_SECRET=your-secret-key
+JWT_TOKEN_AUDIENCE=your-audience
+JWT_TOKEN_ISSUER=your-issuer
+JWT_ACCESS_TOKEN_TTL=3600
+JWT_REFRESH_TOKEN_TTL=86400
+
+# Email
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=seu-email@gmail.com
+EMAIL_PASSWORD=sua-senha-de-app
+EMAIL_FROM=Meu Pet Club <no-reply@meupetclub.com>
+```
+
+> Nota: Ao usar Docker Compose, substitua `localhost` por `mongo` e `redis` respectivamente.
 
 ### Usando Docker Compose
 
@@ -30,26 +73,7 @@ API de gerenciamento de usuários e pets desenvolvida com NestJS, MongoDB e Redi
    cd meu-pet-club-api
    ```
 
-2. Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis (ou ajuste conforme necessário):
-
-   ```
-   # API
-   PORT=3000
-
-   # MongoDB
-   MONGO_URI=mongodb://root:example@mongo:27017/meu-pet-club?authSource=admin
-
-   # Redis
-   REDIS_HOST=redis
-   REDIS_PORT=6379
-   REDIS_PASSWORD=example
-
-   # JWT
-   JWT_SECRET=seu_segredo_jwt_aqui
-   JWT_EXPIRES_IN=1d
-   JWT_REFRESH_SECRET=seu_segredo_refresh_aqui
-   JWT_REFRESH_EXPIRES_IN=7d
-   ```
+2. Crie o arquivo `.env` conforme instruções acima.
 
 3. Execute o projeto com Docker Compose:
 
@@ -57,7 +81,7 @@ API de gerenciamento de usuários e pets desenvolvida com NestJS, MongoDB e Redi
    docker-compose up
    ```
 
-4. A API estará disponível em: [http://localhost:3000](http://localhost:3000)
+4. A API estará disponível em: [http://localhost:3000/api/v1](http://localhost:3000/api/v1)
 
 ### Para desenvolvimento local
 
@@ -78,114 +102,259 @@ API de gerenciamento de usuários e pets desenvolvida com NestJS, MongoDB e Redi
    npm run start:dev
    ```
 
-## URLs Disponíveis
+## 🔗 URLs Disponíveis
 
-- **API**: [http://localhost:3000](http://localhost:3000)
-- **Documentação da API (Swagger)**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
+- **API Base**: [http://localhost:3000/api/v1](http://localhost:3000/api/v1)
+- **Documentação da API (Swagger)**: [http://localhost:3000/api/v1/docs](http://localhost:3000/api/v1/docs)
 - **MongoDB Express** (Gerenciador de BD): [http://localhost:8081](http://localhost:8081)
 - **Redis Commander** (Gerenciador de Redis): [http://localhost:8082](http://localhost:8082)
 
-## Visão Geral
+## 👁️ Visão Geral
 
-O Meu Pet Club API é um sistema de gerenciamento para pet shops ou clínicas veterinárias, permitindo o cadastro de usuários e seus pets. O sistema implementa controle de acesso baseado em roles (RBAC) com três níveis de permissão:
+Este projeto foi desenvolvido como parte de um teste técnico para a empresa Meu Pet Club. Trata-se de uma API de gerenciamento de usuários e seus pets, projetada para demonstrar habilidades de desenvolvimento com NestJS, MongoDB, Redis e padrões arquiteturais modernos.
+
+O sistema implementa controle de acesso baseado em roles (RBAC) com três níveis de permissão:
 
 - **USER**: Clientes comuns que podem gerenciar seus próprios dados e pets
 - **ADMIN**: Administradores com acesso a dados de usuários e pets
 - **ROOT**: Privilégios máximos para gerenciar todo o sistema
 
-## Arquitetura
+## 🏗️ Arquitetura
 
 O projeto foi desenvolvido seguindo os princípios da Arquitetura Limpa (Clean Architecture), com separação clara entre camadas:
 
 1. **Domain**: O núcleo da aplicação, contendo entidades e regras de negócio
+
+   - Entidades (User, Pet)
+   - Interfaces de repositórios
+   - Regras de negócio e validações
+
 2. **Application**: Casos de uso e lógica da aplicação
-3. **Infrastructure**: Implementações concretas como banco de dados e serviços externos
+
+   - DTOs para transferência de dados
+   - Serviços de aplicação
+   - Mapeadores
+
+3. **Infrastructure**: Implementações concretas de serviços e repositórios
+
+   - Repositórios MongoDB
+   - Implementação de autenticação
+   - Serviços de email e cache
+
 4. **Interface**: Controllers e apresentação dos dados
+   - Controllers REST
+   - Presenters (formatadores de resposta)
+   - Módulos NestJS
 
-## Funcionalidades
+### Estrutura de pastas
 
-- Autenticação e autorização com JWT
-- Gestão de usuários com diferentes níveis de acesso (RBAC)
-- Cadastro e gerenciamento de pets
-- Recuperação de senha por e-mail
-- Resposta HATEOAS para melhor experiência de API
-- Documentação automática com Swagger
+```
+src/
+├── main.ts                  # Ponto de entrada da aplicação
+├── app.module.ts            # Módulo principal
+├── application/             # Camada de aplicação
+│   ├── dtos/                # Data Transfer Objects
+│   └── services/            # Serviços de aplicação
+├── common/                  # Utilitários compartilhados
+├── config/                  # Configurações da aplicação
+├── domain/                  # Camada de domínio
+│   ├── entities/            # Entidades do sistema
+│   └── repositories/        # Interfaces de repositórios
+├── iam/                     # Identity and Access Management
+│   ├── authentication/      # Autenticação
+│   ├── authorization/       # Autorização
+│   ├── hashing/             # Serviços de hash
+│   └── redis/               # Armazenamento em Redis
+├── infra/                   # Camada de infraestrutura
+│   ├── database/            # Implementações de banco de dados
+│   ├── email/               # Serviço de e-mail
+│   └── mappers/             # Mapeadores
+└── interface/               # Camada de interface
+    ├── modules/             # Módulos NestJS
+    └── server/              # Controladores e presenters
+```
 
-## Entidades
+## ✨ Funcionalidades
+
+- **Autenticação completa**:
+
+  - Login/Signin com email e senha
+  - Registro/Signup de novos usuários
+  - Logout/Signout com invalidação de token
+  - Refresh token para renovação da sessão
+  - Recuperação de senha via email
+
+- **Controle de acesso** baseado em roles (RBAC)
+
+  - Diferentes permissões por tipo de usuário
+  - Guards de segurança para proteção de rotas
+
+- **Gestão de usuários**:
+
+  - Criação, atualização e remoção
+  - Busca por ID e listagem
+  - Permissões hierárquicas
+
+- **Gestão de pets**:
+
+  - CRUD completo (Criar, Ler, Atualizar, Deletar)
+  - Associação com usuários
+  - Busca por proprietário
+
+- **API RESTful**:
+  - Padrão HATEOAS para navegabilidade
+  - Documentação Swagger/OpenAPI
+  - Validação de dados com class-validator
+
+## 📝 Entidades
 
 ### Usuário (User)
 
-Representa um usuário do sistema, com os seguintes atributos:
+Representa um usuário do sistema:
 
-- **id**: Identificador único (UUID)
-- **name**: Nome completo
-- **email**: E-mail único para acesso
-- **password**: Senha (armazenada com hash)
-- **role**: Papel do usuário (USER, ADMIN ou ROOT)
-- **resetToken**: Token para redefinição de senha (opcional)
-- **resetTokenExpires**: Data de expiração do token (opcional)
+| Campo             | Tipo   | Descrição                                  |
+| ----------------- | ------ | ------------------------------------------ |
+| id                | UUID   | Identificador único                        |
+| name              | string | Nome completo                              |
+| email             | string | E-mail único para acesso                   |
+| password          | string | Senha (armazenada com hash)                |
+| role              | enum   | Papel (USER, ADMIN ou ROOT)                |
+| resetToken        | string | Token para redefinição de senha (opcional) |
+| resetTokenExpires | Date   | Data de expiração do token (opcional)      |
 
 ### Pet
 
-Representa um animal de estimação associado a um usuário, com os atributos:
+Representa um animal de estimação associado a um usuário:
 
-- **id**: Identificador único (UUID)
-- **name**: Nome do pet
-- **type**: Tipo de animal (ex: "Cachorro", "Gato", etc.)
-- **breed**: Raça (opcional)
-- **age**: Idade em anos (opcional)
-- **userId**: ID do usuário proprietário
+| Campo  | Tipo   | Descrição                               |
+| ------ | ------ | --------------------------------------- |
+| id     | UUID   | Identificador único                     |
+| name   | string | Nome do pet                             |
+| type   | string | Tipo de animal (ex: "Cachorro", "Gato") |
+| breed  | string | Raça (opcional)                         |
+| age    | number | Idade em anos (opcional)                |
+| userId | UUID   | ID do usuário proprietário              |
 
-## Autenticação e Autorização
+## 🔐 Autenticação e Autorização
 
 O sistema utiliza autenticação baseada em tokens JWT com os seguintes recursos:
 
-- Login/Signin com email e senha
-- Registro/Signup de novos usuários
-- Logout/Signout com invalidação de token
-- Refresh token para renovação da sessão
-- Recuperação de senha via email
-- Autorização baseada em roles (RBAC)
+### Fluxo de autenticação
 
-## Endpoints da API
+1. **Login**: O usuário fornece email e senha e recebe um access token e refresh token
+2. **Acesso a recursos**: O access token é usado para acessar recursos protegidos
+3. **Renovação**: Quando o access token expira, o refresh token pode ser usado para obter um novo par de tokens
+4. **Logout**: O refresh token é invalidado no Redis para impedir seu uso futuro
+
+### Controle de acesso (RBAC)
+
+O sistema implementa um controle de acesso baseado em papéis:
+
+| Papel | Permissões                                         |
+| ----- | -------------------------------------------------- |
+| USER  | Gerenciar apenas seus próprios dados e pets        |
+| ADMIN | Gerenciar dados de qualquer usuário e pet          |
+| ROOT  | Acesso total, incluindo criar outros usuários ROOT |
+
+## 🛣️ Endpoints da API
 
 ### Autenticação
 
-- **POST /auth/signin**: Autenticar usuário
-- **POST /auth/signup**: Cadastrar novo usuário
-- **POST /auth/signout**: Encerrar sessão
-- **POST /auth/refresh-tokens**: Renovar tokens
-- **POST /auth/request-password-reset**: Solicitar redefinição de senha
-- **POST /auth/reset-password**: Redefinir senha
+| Método | Endpoint                     | Descrição                      | Acesso      |
+| ------ | ---------------------------- | ------------------------------ | ----------- |
+| POST   | /auth/signin                 | Autenticar usuário             | Público     |
+| POST   | /auth/signup                 | Cadastrar novo usuário         | Público     |
+| POST   | /auth/signout                | Encerrar sessão                | Autenticado |
+| POST   | /auth/refresh-tokens         | Renovar tokens                 | Autenticado |
+| POST   | /auth/request-password-reset | Solicitar redefinição de senha | Público     |
+| POST   | /auth/reset-password         | Redefinir senha                | Público     |
 
 ### Usuários
 
-- **GET /users**: Listar todos os usuários (ADMIN/ROOT)
-- **GET /users/me**: Obter dados do usuário atual
-- **GET /users/:id**: Buscar usuário por ID (ADMIN/ROOT)
-- **POST /users**: Criar novo usuário (ADMIN/ROOT)
-- **PATCH /users/me**: Atualizar dados do usuário atual
-- **PATCH /users/:id**: Atualizar usuário por ID (ADMIN/ROOT)
-- **DELETE /users/:id**: Excluir usuário (ADMIN/ROOT)
+| Método | Endpoint   | Descrição                        | Acesso      |
+| ------ | ---------- | -------------------------------- | ----------- |
+| GET    | /users     | Listar todos os usuários         | ADMIN, ROOT |
+| GET    | /users/me  | Obter dados do usuário atual     | Autenticado |
+| GET    | /users/:id | Buscar usuário por ID            | ADMIN, ROOT |
+| POST   | /users     | Criar novo usuário               | ADMIN, ROOT |
+| PATCH  | /users/me  | Atualizar dados do usuário atual | Autenticado |
+| PATCH  | /users/:id | Atualizar usuário por ID         | ADMIN, ROOT |
+| DELETE | /users/:id | Excluir usuário                  | ADMIN, ROOT |
 
 ### Pets
 
-- **GET /pets**: Listar todos os pets (ADMIN/ROOT)
-- **GET /pets/my-pets**: Listar pets do usuário atual
-- **GET /pets/:id**: Buscar pet por ID
-- **POST /pets**: Criar novo pet (USER)
-- **PATCH /pets/:id**: Atualizar pet
-- **DELETE /pets/:id**: Excluir pet
+| Método | Endpoint      | Descrição                    | Acesso                    |
+| ------ | ------------- | ---------------------------- | ------------------------- |
+| GET    | /pets         | Listar todos os pets         | ADMIN, ROOT               |
+| GET    | /pets/my-pets | Listar pets do usuário atual | Autenticado               |
+| GET    | /pets/:id     | Buscar pet por ID            | Proprietário, ADMIN, ROOT |
+| POST   | /pets         | Criar novo pet               | USER                      |
+| PATCH  | /pets/:id     | Atualizar pet                | Proprietário, ADMIN, ROOT |
+| DELETE | /pets/:id     | Excluir pet                  | Proprietário, ADMIN, ROOT |
 
-## Tecnologias Utilizadas
+## 🧪 Testes
 
-- **NestJS**: Framework Node.js para criação de aplicações escaláveis
-- **MongoDB**: Banco de dados NoSQL para armazenamento de dados
+O projeto inclui testes unitários e de integração para garantir a qualidade do código:
+
+### Executando testes
+
+```bash
+# Testes unitários
+npm test
+
+# Testes com watch mode
+npm run test:watch
+
+# Testes com cobertura
+npm run test:cov
+
+# Testes end-to-end
+npm run test:e2e
+```
+
+## 👨‍💻 Desenvolvimento
+
+### Scripts disponíveis
+
+```bash
+# Iniciar servidor de desenvolvimento
+npm run start:dev
+
+# Formatar código
+npm run format
+
+# Verificar lint
+npm run lint
+
+# Compilar projeto
+npm run build
+
+# Iniciar em produção
+npm run start:prod
+```
+
+### Boas práticas de desenvolvimento
+
+- Mantenha a arquitetura limpa respeitando a separação de camadas
+- Escreva testes para novas funcionalidades
+- Siga o estilo de código com o linter configurado
+- Documente novos endpoints usando os decoradores Swagger
+
+## 🛠️ Tecnologias Utilizadas
+
+- **NestJS**: Framework Node.js para aplicações escaláveis
+- **MongoDB**: Banco de dados NoSQL
 - **Mongoose**: ODM para MongoDB
-- **Redis**: Cache e armazenamento de sessões/tokens
-- **JWT**: Geração e validação de tokens de autenticação
+- **Redis**: Cache e armazenamento de tokens
+- **JWT**: Tokens de autenticação
 - **Swagger/OpenAPI**: Documentação da API
 - **Jest**: Framework de testes
-- **Docker/Docker Compose**: Containerização e orquestração
+- **Docker/Docker Compose**: Containerização
 - **Bcrypt**: Hashing de senhas
-- **NodeMailer**: Envio de emails para recuperação de senha
+- **NodeMailer**: Envio de emails
+- **TypeScript**: Linguagem de programação tipada
+- **Class Validator**: Validação de dados
+
+---
+
+Desenvolvido como parte do desafio técnico Meu Pet Club.

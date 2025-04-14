@@ -1,12 +1,100 @@
 ### Variáveis globais
 @baseUrl = http://localhost:3000
+@apiV1 = {{baseUrl}}/api/v1
 
+### Autenticação - Variáveis
+@accessToken = {{signIn.response.body.accessToken}}
+@refreshToken = {{signIn.response.body.refreshToken}}
+
+### Usuário - Variáveis
 @userId = {{createUser.response.body.id}}
 @userEmail = {{createUser.response.body.email}}
-### Criar uma nova conta
+
+### Pets - Variáveis
+@petId = {{createPet.response.body.id}}
+
+### ============================================================================
+### AUTENTICAÇÃO
+### ============================================================================
+
+### Criar um novo usuário (Sign Up)
+# @name signUp
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+    "name": "Novo Usuário",
+    "email": "novo.usuario@example.com",
+    "password": "senha123",
+    "role": "USER"
+}
+
+### Fazer login (Sign In)
+# @name signIn
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+    "email": "user255@example.com",
+    "password": "password123"
+}
+
+### Renovar tokens
+# @name refreshTokens
+POST {{baseUrl}}/auth/refresh-tokens
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "refreshToken": "{{refreshToken}}"
+}
+
+### Requisitar redefinição de senha
+# @name requestPasswordReset
+POST {{baseUrl}}/auth/request-password-reset
+Content-Type: application/json
+
+{
+    "email": "user255@example.com"
+}
+
+### Redefinir senha com token
+# @name resetPassword
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+    "token": "token-de-redefinicao",
+    "password": "novaSenha123"
+}
+
+### Logout (Sign Out)
+# @name signOut
+POST {{baseUrl}}/auth/signout
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### ============================================================================
+### USUÁRIOS
+### ============================================================================
+
+### Listar todos os usuários (apenas ADMIN e ROOT)
+# @name listUsers
+GET {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Obter informações do usuário atual
+# @name getMe
+GET {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Criar um novo usuário (apenas ADMIN e ROOT)
 # @name createUser
 POST {{baseUrl}}/users
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
     "name": "User",
@@ -15,18 +103,89 @@ Content-Type: application/json
     "role": "USER"
 }
 
-### Buscar um usuario
+### Buscar um usuário pelo ID (apenas ADMIN e ROOT)
 # @name getUser
 GET {{baseUrl}}/users/{{userId}}
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
-
-### Atualizar um usuario
-# @name updateUser
-PATCH  {{baseUrl}}/users/{{userId}}
+### Atualizar usuário atual
+# @name updateMe
+PATCH {{baseUrl}}/users/me
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Meu Nome Atualizado",
+    "email": "meu.email.atualizado@example.com"
+}
+
+### Atualizar um usuário pelo ID (apenas ADMIN e ROOT)
+# @name updateUser
+PATCH {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
     "name": "Updated User33",
     "email": "{{userEmail}}"
 }
+
+### Excluir um usuário pelo ID (apenas ADMIN e ROOT)
+# @name deleteUser
+DELETE {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### ============================================================================
+### PETS
+### ============================================================================
+
+### Listar todos os pets (apenas ADMIN e ROOT)
+# @name listAllPets
+GET {{baseUrl}}/pets
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Listar pets do usuário atual
+# @name listMyPets
+GET {{baseUrl}}/pets/my-pets
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Criar um novo pet (apenas USER)
+# @name createPet
+POST {{baseUrl}}/pets
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Rex",
+    "type": "Cachorro",
+    "breed": "Labrador",
+    "age": 3
+}
+
+### Buscar um pet pelo ID
+# @name getPet
+GET {{baseUrl}}/pets/{{petId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Atualizar um pet
+# @name updatePet
+PATCH {{baseUrl}}/pets/{{petId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Rex Atualizado",
+    "breed": "Golden Retriever",
+    "age": 4
+}
+
+### Excluir um pet
+# @name deletePet
+DELETE {{baseUrl}}/pets/{{petId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
