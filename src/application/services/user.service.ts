@@ -1,10 +1,10 @@
 import { RoleEnum } from '@/common/enums/role.enum';
 import { User } from '@/domain/entities/user.entity';
-import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
-import { EmailService } from '@/infra/email/email.service';
-import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import { IUserRepository } from '@/domain/repositories/user.repository.interface';
 import { HashingService } from '@/iam/hashing/hashing.service';
 import { ActiveUserData } from '@/iam/interfaces/active-user-data.interface';
+import { EmailService } from '@/infra/email/email.service';
+import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { CreateUserDto } from '../dtos/user/create-user.dto';
 import { UpdateMeDto } from '../dtos/user/update-me.dto';
@@ -17,7 +17,7 @@ export class UserService {
 
   constructor(
     @Inject('UserRepository')
-    private readonly userRepository: MongooseUserRepository,
+    private readonly userRepository: IUserRepository,
     @Inject(PetService)
     private readonly petService: PetService,
     private readonly emailService: EmailService,

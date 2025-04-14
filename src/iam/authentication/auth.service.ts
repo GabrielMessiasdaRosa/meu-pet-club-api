@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 
 import { RoleEnum } from '@/common/enums/role.enum';
 import { User } from '@/domain/entities/user.entity';
-import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
+import { IUserRepository } from '@/domain/repositories/user.repository.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { randomUUID } from 'crypto';
 import jwtConfig from '../config/jwt.config';
@@ -33,7 +33,7 @@ export class AuthService {
   constructor(
     @InjectModel('UserRepository')
     @Inject('UserRepository')
-    private userRepository: MongooseUserRepository,
+    private userRepository: IUserRepository,
     private readonly hashingService: HashingService,
     private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
