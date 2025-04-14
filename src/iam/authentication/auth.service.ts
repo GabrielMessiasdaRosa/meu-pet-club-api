@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 
 import { RoleEnum } from '@/common/enums/role.enum';
 import { User } from '@/domain/entities/user.entity';
-import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
+import { IUserRepository } from '@/domain/repositories/user.repository.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { randomUUID } from 'crypto';
 import jwtConfig from '../config/jwt.config';
@@ -33,7 +33,7 @@ export class AuthService {
   constructor(
     @InjectModel('UserRepository')
     @Inject('UserRepository')
-    private userRepository: MongooseUserRepository,
+    private userRepository: IUserRepository,
     private readonly hashingService: HashingService,
     private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
@@ -107,25 +107,21 @@ export class AuthService {
 
   async signUp(signUpDto: SignUpDto, currentUser?: ActiveUserData) {
     try {
-      // Verificando se está tentando criar um usuário ROOT
-      if (signUpDto.role === RoleEnum.ROOT) {
-        // Se for um registro público ou o usuário atual não for ROOT, não permite
-        if (!currentUser || currentUser.role !== RoleEnum.ROOT) {
-          throw new ForbiddenException(
-            'Apenas usuários ROOT podem criar outros usuários ROOT',
-          );
+      // Se NÃO houver um usuário logado (signup público), apenas permite criar USER
+      if (!currentUser) {
+        if (signUpDto.role !== RoleEnum.USER) {
+          throw new ForbiddenException('Erro ao tentar criar o usuário.');
         }
-      }
+      } else {
+        // Verificando se está tentando criar um usuário ROOT
+        if (signUpDto.role === RoleEnum.ROOT) {
+          // Se o usuário atual não for ROOT, não permite
+          if (currentUser.role !== RoleEnum.ROOT) {
+            throw new ForbiddenException('Erro ao tentar criar o usuário.');
+          }
+        }
 
-      // Verificando se um ADMIN está tentando criar um usuário USER
-      if (
-        currentUser &&
-        currentUser.role === RoleEnum.ADMIN &&
-        signUpDto.role === RoleEnum.USER
-      ) {
-        throw new ForbiddenException(
-          'Usuários ADMIN não podem criar usuários do tipo USER',
-        );
+        // Note: Removemos a validação que impedia ADMIN de criar USER (CLIENTE)
       }
 
       const user = new User({

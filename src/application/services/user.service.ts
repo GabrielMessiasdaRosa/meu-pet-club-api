@@ -1,9 +1,10 @@
 import { RoleEnum } from '@/common/enums/role.enum';
 import { User } from '@/domain/entities/user.entity';
-import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
+import { IUserRepository } from '@/domain/repositories/user.repository.interface';
+import { HashingService } from '@/iam/hashing/hashing.service';
+import { ActiveUserData } from '@/iam/interfaces/active-user-data.interface';
 import { EmailService } from '@/infra/email/email.service';
 import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
-import { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
 import { v4 as uuid } from 'uuid';
 import { CreateUserDto } from '../dtos/user/create-user.dto';
 import { UpdateMeDto } from '../dtos/user/update-me.dto';
@@ -16,10 +17,11 @@ export class UserService {
 
   constructor(
     @Inject('UserRepository')
-    private readonly userRepository: MongooseUserRepository,
+    private readonly userRepository: IUserRepository,
     @Inject(PetService)
     private readonly petService: PetService,
     private readonly emailService: EmailService,
+    private readonly hashingService: HashingService,
   ) {}
 
   async findAll() {
@@ -45,17 +47,7 @@ export class UserService {
       }
     }
 
-    // Verifica se é um ADMIN tentando criar um usuário USER
-    if (
-      currentUser.role === RoleEnum.ADMIN &&
-      userData.role === RoleEnum.USER
-    ) {
-      throw new ForbiddenException(
-        'Usuários ADMIN não podem criar usuários do tipo USER',
-      );
-    }
-
-    // ADMIN só pode criar outros ADMIN, ROOT pode criar qualquer tipo
+    // ADMIN pode criar usuários USER (CLIENTE) e outros ADMIN, ROOT pode criar qualquer tipo
     const newUser = new User({
       id: uuid(),
       name: userData.name,
@@ -63,6 +55,9 @@ export class UserService {
       password: userData.password,
       role: userData.role,
     });
+
+    // Criptografar a senha antes de salvar o usuário
+    newUser.setPassword(await this.hashingService.hash(newUser.Password));
 
     const createdUser = await this.userRepository.create(newUser);
 
@@ -104,12 +99,7 @@ export class UserService {
 
     // Se temos um usuário autenticado e não é uma atualização do próprio usuário
     if (currentUser && currentUser.sub !== id) {
-      // Verifica se é um ADMIN tentando atualizar um USER
-      if (currentUser.role === RoleEnum.ADMIN && user.Role === RoleEnum.USER) {
-        throw new ForbiddenException(
-          'Usuários ADMIN não podem atualizar usuários do tipo USER',
-        );
-      }
+      // Verificação removida para permitir que ADMIN atualize usuários USER (CLIENTE)
     }
 
     const existingUser = new User({
@@ -122,7 +112,13 @@ export class UserService {
 
     existingUser.setName(userData.name ?? existingUser.Name);
     existingUser.setEmail(userData.email ?? existingUser.Email);
-    existingUser.setPassword(userData.password ?? existingUser.Password);
+
+    // Se a senha estiver sendo atualizada, criptografá-la
+    if (userData.password) {
+      existingUser.setPassword(
+        await this.hashingService.hash(userData.password),
+      );
+    }
 
     return await this.userRepository.update(id, existingUser);
   }

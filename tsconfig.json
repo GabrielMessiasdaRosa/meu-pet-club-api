@@ -23,7 +23,8 @@
       "@/infra/*": ["./src/infra/*"],
       "@/common/*": ["./src/common/*"],
       "@/config/*": ["./src/config/*"],
-      "@/interface/*": ["./src/interface/*"]
+      "@/interface/*": ["./src/interface/*"],
+      "@/iam/*": ["./src/iam/*"]
     }
   }
 }
