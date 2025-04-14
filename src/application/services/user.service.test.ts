@@ -1,6 +1,7 @@
 import { RoleEnum } from '@/common/enums/role.enum';
 import { Pet } from '@/domain/entities/pet.entity';
 import { User } from '@/domain/entities/user.entity';
+import { HashingService } from '@/iam/hashing/hashing.service';
 import { ActiveUserData } from '@/iam/interfaces/active-user-data.interface';
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
 import { EmailService } from '@/infra/email/email.service';
@@ -73,6 +74,13 @@ describe('UserService Integration Tests', () => {
           provide: EmailService,
           useValue: {
             sendUserCredentials: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: HashingService,
+          useValue: {
+            hash: jest.fn().mockResolvedValue('hashedPassword'),
+            compare: jest.fn().mockResolvedValue(true),
           },
         },
       ],
