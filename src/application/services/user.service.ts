@@ -3,7 +3,8 @@ import { User } from '@/domain/entities/user.entity';
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
 import { EmailService } from '@/infra/email/email.service';
 import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
-import { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
+import { HashingService } from '@/iam/hashing/hashing.service';
+import { ActiveUserData } from '@/iam/interfaces/active-user-data.interface';
 import { v4 as uuid } from 'uuid';
 import { CreateUserDto } from '../dtos/user/create-user.dto';
 import { UpdateMeDto } from '../dtos/user/update-me.dto';
@@ -20,6 +21,7 @@ export class UserService {
     @Inject(PetService)
     private readonly petService: PetService,
     private readonly emailService: EmailService,
+    private readonly hashingService: HashingService,
   ) {}
 
   async findAll() {
@@ -63,6 +65,9 @@ export class UserService {
       password: userData.password,
       role: userData.role,
     });
+
+    // Criptografar a senha antes de salvar o usuário
+    newUser.setPassword(await this.hashingService.hash(newUser.Password));
 
     const createdUser = await this.userRepository.create(newUser);
 
@@ -122,7 +127,13 @@ export class UserService {
 
     existingUser.setName(userData.name ?? existingUser.Name);
     existingUser.setEmail(userData.email ?? existingUser.Email);
-    existingUser.setPassword(userData.password ?? existingUser.Password);
+
+    // Se a senha estiver sendo atualizada, criptografá-la
+    if (userData.password) {
+      existingUser.setPassword(
+        await this.hashingService.hash(userData.password),
+      );
+    }
 
     return await this.userRepository.update(id, existingUser);
   }

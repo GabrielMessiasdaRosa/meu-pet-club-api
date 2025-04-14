@@ -1,4 +1,6 @@
 import { UserService } from '@/application/services/user.service';
+import { BcryptService } from '@/iam/hashing/bcrypt.service';
+import { HashingService } from '@/iam/hashing/hashing.service';
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
 import { UserSchemaDocument } from '@/infra/database/mongodb/schemas/user.schema';
 import { EmailModule } from '@/infra/email/email.module';
@@ -19,6 +21,10 @@ import { PetsModule } from './pet.module';
     {
       provide: 'UserRepository',
       useClass: MongooseUserRepository,
+    },
+    {
+      provide: HashingService,
+      useClass: BcryptService,
     },
   ],
   exports: [UserService],

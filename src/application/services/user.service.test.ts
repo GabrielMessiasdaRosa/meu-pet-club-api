@@ -1,11 +1,11 @@
 import { RoleEnum } from '@/common/enums/role.enum';
 import { Pet } from '@/domain/entities/pet.entity';
 import { User } from '@/domain/entities/user.entity';
+import { ActiveUserData } from '@/iam/interfaces/active-user-data.interface';
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
 import { EmailService } from '@/infra/email/email.service';
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
 import { CreateUserDto } from '../dtos/user/create-user.dto';
 import { UpdateMeDto } from '../dtos/user/update-me.dto';
 import { UpdateUserDto } from '../dtos/user/update-user.dto';
