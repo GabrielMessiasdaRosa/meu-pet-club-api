@@ -107,25 +107,29 @@ export class AuthService {
 
   async signUp(signUpDto: SignUpDto, currentUser?: ActiveUserData) {
     try {
-      // Verificando se está tentando criar um usuário ROOT
-      if (signUpDto.role === RoleEnum.ROOT) {
-        // Se for um registro público ou o usuário atual não for ROOT, não permite
-        if (!currentUser || currentUser.role !== RoleEnum.ROOT) {
+      // Se NÃO houver um usuário logado (signup público), apenas permite criar USER
+      if (!currentUser) {
+        if (signUpDto.role !== RoleEnum.USER) {
+          throw new ForbiddenException('Erro ao tentar criar o usuário.');
+        }
+      } else {
+        // Verificando se está tentando criar um usuário ROOT
+        if (signUpDto.role === RoleEnum.ROOT) {
+          // Se o usuário atual não for ROOT, não permite
+          if (currentUser.role !== RoleEnum.ROOT) {
+            throw new ForbiddenException('Erro ao tentar criar o usuário.');
+          }
+        }
+
+        // Verificando se um ADMIN está tentando criar um usuário USER
+        if (
+          currentUser.role === RoleEnum.ADMIN &&
+          signUpDto.role === RoleEnum.USER
+        ) {
           throw new ForbiddenException(
-            'Apenas usuários ROOT podem criar outros usuários ROOT',
+            'Usuários ADMIN não podem criar usuários do tipo USER',
           );
         }
-      }
-
-      // Verificando se um ADMIN está tentando criar um usuário USER
-      if (
-        currentUser &&
-        currentUser.role === RoleEnum.ADMIN &&
-        signUpDto.role === RoleEnum.USER
-      ) {
-        throw new ForbiddenException(
-          'Usuários ADMIN não podem criar usuários do tipo USER',
-        );
       }
 
       const user = new User({
