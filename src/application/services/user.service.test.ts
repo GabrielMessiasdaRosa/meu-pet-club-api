@@ -1,20 +1,18 @@
 import { RoleEnum } from '@/common/enums/role.enum';
 import { User } from '@/domain/entities/user.entity';
 import { MongooseUserRepository } from '@/infra/database/mongodb/repositories/user.repository';
-import { UserSchemaDocument } from '@/infra/database/mongodb/schemas/user.schema';
 import { ForbiddenException } from '@nestjs/common';
-import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Model } from 'mongoose';
 import { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
 import { CreateUserDto } from '../dtos/user/create-user.dto';
 import { UpdateUserDto } from '../dtos/user/update-user.dto';
+import { PetService } from './pet.service';
 import { UserService } from './user.service';
 
 describe('UserService Integration Tests', () => {
   let userService: UserService;
   let userRepository: MongooseUserRepository;
-  let userModel: Model<UserSchemaDocument>;
+  let petService: PetService;
 
   // Mock do usuário autenticado para os testes
   const mockCurrentUser: ActiveUserData = {
@@ -54,37 +52,9 @@ describe('UserService Integration Tests', () => {
           },
         },
         {
-          provide: MongooseUserRepository,
+          provide: PetService,
           useValue: {
-            findAll: jest.fn(),
-            findById: jest.fn(),
-            findByEmail: jest.fn(),
-            create: jest.fn().mockImplementation((dto) =>
-              Promise.resolve({
-                ...dto,
-                id: 'uuid',
-                password: 'hashedPassword',
-              }),
-            ),
-            update: jest.fn(),
-            delete: jest.fn(),
-          },
-        },
-        {
-          provide: getModelToken('User'),
-          useValue: {
-            findAll: jest.fn(),
-            findById: jest.fn(),
-            findByEmail: jest.fn(),
-            create: jest.fn().mockImplementation((dto) =>
-              Promise.resolve({
-                ...dto,
-                id: 'uuid',
-                password: 'hashedPassword',
-              }),
-            ),
-            update: jest.fn(),
-            delete: jest.fn(),
+            findByUserId: jest.fn(),
           },
         },
       ],
@@ -92,7 +62,7 @@ describe('UserService Integration Tests', () => {
 
     userService = module.get<UserService>(UserService);
     userRepository = module.get('UserRepository');
-    userModel = module.get<Model<UserSchemaDocument>>(getModelToken('User'));
+    petService = module.get<PetService>(PetService);
   });
 
   it('should create a new USER role user by ROOT', async () => {
@@ -162,7 +132,6 @@ describe('UserService Integration Tests', () => {
       role: RoleEnum.USER,
     });
 
-    jest.spyOn(userModel, 'findById').mockResolvedValueOnce(user);
     jest.spyOn(userRepository, 'findById').mockResolvedValueOnce(user);
 
     const result = await userService.findById('uuid');
@@ -192,7 +161,6 @@ describe('UserService Integration Tests', () => {
       role: existingUser.Role,
     });
 
-    jest.spyOn(userModel, 'findById').mockResolvedValueOnce(existingUser);
     jest.spyOn(userRepository, 'findById').mockResolvedValueOnce(existingUser);
     jest.spyOn(userRepository, 'update').mockResolvedValueOnce(updatedUser);
 
@@ -209,7 +177,6 @@ describe('UserService Integration Tests', () => {
       role: RoleEnum.USER,
     });
 
-    jest.spyOn(userModel, 'findById').mockResolvedValueOnce(user);
     jest.spyOn(userRepository, 'findById').mockResolvedValueOnce(user);
     jest.spyOn(userRepository, 'delete').mockResolvedValueOnce(undefined);
 

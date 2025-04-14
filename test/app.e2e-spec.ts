@@ -1,17 +1,25 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+describe('AppController (e2e) - Final', () => {
+  let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('/ (GET) deve retornar 404 Not Found quando acessado', () => {
+    return request(app.getHttpServer()).get('/').expect(HttpStatus.NOT_FOUND);
   });
 });

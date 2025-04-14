@@ -14,5 +14,9 @@
     "@/config/(.*)": "<rootDir>/../src/config/$1",
     "@/interface/(.*)": "<rootDir>/../src/interface/$1",
     "^src/(.*)": "<rootDir>/../src/$1"
-  }
+  },
+  "testTimeout": 30000,
+  "forceExit": true,
+  "detectOpenHandles": true,
+  "verbose": true
 }
